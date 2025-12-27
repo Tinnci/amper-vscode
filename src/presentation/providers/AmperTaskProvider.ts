@@ -30,12 +30,12 @@ export class AmperTaskProvider implements vscode.TaskProvider {
   private createTask(type: AmperTaskType, moduleName: string, folder: vscode.WorkspaceFolder): vscode.Task {
     const command = type.toLowerCase();
     const isWindows = process.platform === 'win32';
-    const wrapper = isWindows ? 'amper.bat' : './amper';
+    const wrapper = isWindows ? '.\\amper.bat' : './amper';
     
-    // For now, we just run 'amper <command>' from the root. 
-    // Amper CLI handles multi-module projects.
-    // If we want to run for a specific module, we might need more args.
-    const execution = new vscode.ShellExecution(`${wrapper} ${command}`);
+    // Use ShellExecution with explicit cwd to ensure the wrapper is found
+    const execution = new vscode.ShellExecution(`${wrapper} ${command}`, {
+      cwd: folder.uri.fsPath
+    });
     
     const task = new vscode.Task(
       { type: AmperTaskProvider.AmperType, task: command, module: moduleName },
@@ -43,7 +43,7 @@ export class AmperTaskProvider implements vscode.TaskProvider {
       `amper ${command} (${moduleName})`,
       AmperTaskProvider.AmperType,
       execution,
-      []
+      ['$amper-kotlin']
     );
 
     if (type === AmperTaskType.Build) {

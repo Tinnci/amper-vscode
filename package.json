@@ -95,6 +95,32 @@
           }
         }
       }
+    ],
+    "problemMatchers": [
+      {
+        "name": "amper-kotlin",
+        "label": "Amper Kotlin Compiler",
+        "owner": "kotlin",
+        "source": "amper",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(error|warning|info):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "module.yaml",
+        "url": "./schemas/module-schema.json"
+      }
     ]
   },
   "scripts": {

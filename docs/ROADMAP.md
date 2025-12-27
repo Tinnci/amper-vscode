@@ -14,9 +14,10 @@ This document outlines the development plan for the Amper VS Code extension.
 
 ## 🚩 Phase 3: IDE Experience (In Progress)
 - [x] **Project Explorer**: Custom TreeView in the Activity Bar to visualize project structure.
-- [ ] **Module Commands**: Inline actions in the TreeView (Run, Test, Clean).
-- [ ] **Output Highlighting**: Problem matchers and colorized output for Amper CLI.
-- [ ] **Schema Support**: JSON Schema for `module.yaml` to provide IntelliSense.
+- [x] **Module Commands**: Inline actions in the TreeView (Run, Test, Build).
+- [x] **Output Highlighting**: Problem matchers for Kotlin compiler errors.
+- [x] **Schema Support**: JSON Schema for `module.yaml` to provide IntelliSense.
+- [ ] **Advanced Task Support**: Support for `amper task` and custom task arguments.
 
 ## 🚩 Phase 4: Advanced Features (Planned)
 - [ ] **Project Templates**: Integration with `amper init` wizard.
