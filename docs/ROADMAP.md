@@ -22,6 +22,7 @@ This document outlines the development plan for the Amper VS Code extension.
 ## 🚩 Phase 4: Advanced Tooling & Integration (In Progress)
 - [ ] **Task Graph Visualization**: Interactive view of the task dependency graph (based on `amper show tasks`).
 - [x] **Project Initialization Wizard**: A user-friendly UI for `amper init` with template selection.
+- [ ] **Dynamic Template Discovery**: Fetch available templates directly from Amper CLI instead of hardcoding.
 - [ ] **Dependency Management**: A dedicated view or UI to manage project dependencies and sync with `module.yaml`.
 - [ ] **Amper Tool Support**: Integration for running custom tools via `amper tool`.
 - [ ] **Profiling Integration**: Support for `--profile` with visualization of Async Profiler snapshots.
