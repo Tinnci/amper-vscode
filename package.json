@@ -12,12 +12,43 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "amper-explorer",
+          "title": "Amper",
+          "icon": "$(rocket)"
+        }
+      ]
+    },
+    "views": {
+      "amper-explorer": [
+        {
+          "id": "amperProjectExplorer",
+          "name": "Projects"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "amper-vscode.checkVersion",
         "title": "Amper: Check Version"
+      },
+      {
+        "command": "amper-vscode.refreshEntry",
+        "title": "Refresh",
+        "icon": "$(refresh)"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "amper-vscode.refreshEntry",
+          "when": "view == amperProjectExplorer",
+          "group": "navigation"
+        }
+      ]
+    },
     "taskDefinitions": [
       {
         "type": "amper",

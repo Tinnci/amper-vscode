@@ -3,16 +3,26 @@ import { NodeProcessExecutor } from '../infrastructure/adapters/NodeProcessExecu
 import { FileSystemProjectRepository } from '../infrastructure/repositories/FileSystemProjectRepository';
 import { TaskService } from '../application/services/TaskService';
 import { AmperTaskProvider } from './providers/AmperTaskProvider';
+import { AmperProjectProvider } from './providers/AmperProjectProvider';
 
 export function activate(context: vscode.ExtensionContext) {
   // Dependency Injection
   const projectRepo = new FileSystemProjectRepository();
   const taskService = new TaskService(projectRepo);
   const taskProvider = new AmperTaskProvider(taskService);
+  const projectProvider = new AmperProjectProvider(taskService);
 
   // Register Task Provider
   context.subscriptions.push(
     vscode.tasks.registerTaskProvider(AmperTaskProvider.AmperType, taskProvider)
+  );
+
+  // Register Tree View
+  vscode.window.registerTreeDataProvider('amperProjectExplorer', projectProvider);
+
+  // Commands
+  context.subscriptions.push(
+    vscode.commands.registerCommand('amper-vscode.refreshEntry', () => projectProvider.refresh())
   );
 
   const disposable = vscode.commands.registerCommand('amper-vscode.checkVersion', async () => {
