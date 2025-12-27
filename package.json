@@ -38,6 +38,21 @@
         "command": "amper-vscode.refreshEntry",
         "title": "Refresh",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "amper-vscode.runModule",
+        "title": "Run Module",
+        "icon": "$(play)"
+      },
+      {
+        "command": "amper-vscode.testModule",
+        "title": "Test Module",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "amper-vscode.buildModule",
+        "title": "Build Module",
+        "icon": "$(build)"
       }
     ],
     "menus": {
@@ -46,6 +61,23 @@
           "command": "amper-vscode.refreshEntry",
           "when": "view == amperProjectExplorer",
           "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "amper-vscode.runModule",
+          "when": "view == amperProjectExplorer && viewItem == module",
+          "group": "inline"
+        },
+        {
+          "command": "amper-vscode.testModule",
+          "when": "view == amperProjectExplorer && viewItem == module",
+          "group": "inline"
+        },
+        {
+          "command": "amper-vscode.buildModule",
+          "when": "view == amperProjectExplorer && viewItem == module",
+          "group": "inline"
         }
       ]
     },

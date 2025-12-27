@@ -35,7 +35,7 @@ export class AmperProjectProvider implements vscode.TreeDataProvider<AmperTreeIt
     if (element instanceof ProjectItem) {
       const result = await this.taskService.getTasksForWorkspace(element.rootPath);
       if (!result) return [];
-      return result.project.modules.map(m => new ModuleItem(m));
+      return result.project.modules.map(m => new ModuleItem(m, element.rootPath));
     }
 
     return [];
@@ -53,7 +53,7 @@ class ProjectItem extends AmperTreeItem {
 }
 
 class ModuleItem extends AmperTreeItem {
-  constructor(public readonly module: AmperModule) {
+  constructor(public readonly module: AmperModule, public readonly rootPath: string) {
     super(module.name, vscode.TreeItemCollapsibleState.None);
     this.description = module.type;
     this.contextValue = 'module';

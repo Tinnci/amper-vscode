@@ -3,7 +3,7 @@ import { NodeProcessExecutor } from '../infrastructure/adapters/NodeProcessExecu
 import { FileSystemProjectRepository } from '../infrastructure/repositories/FileSystemProjectRepository';
 import { TaskService } from '../application/services/TaskService';
 import { AmperTaskProvider } from './providers/AmperTaskProvider';
-import { AmperProjectProvider } from './providers/AmperProjectProvider';
+import { AmperProjectProvider, AmperTreeItem } from './providers/AmperProjectProvider';
 
 export function activate(context: vscode.ExtensionContext) {
   // Dependency Injection
@@ -22,7 +22,19 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Commands
   context.subscriptions.push(
-    vscode.commands.registerCommand('amper-vscode.refreshEntry', () => projectProvider.refresh())
+    vscode.commands.registerCommand('amper-vscode.refreshEntry', () => projectProvider.refresh()),
+    
+    vscode.commands.registerCommand('amper-vscode.runModule', async (item: any) => {
+      await executeAmperTask('run', item);
+    }),
+    
+    vscode.commands.registerCommand('amper-vscode.testModule', async (item: any) => {
+      await executeAmperTask('test', item);
+    }),
+    
+    vscode.commands.registerCommand('amper-vscode.buildModule', async (item: any) => {
+      await executeAmperTask('build', item);
+    })
   );
 
   const disposable = vscode.commands.registerCommand('amper-vscode.checkVersion', async () => {
@@ -43,6 +55,19 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(disposable);
+}
+
+async function executeAmperTask(command: string, item: any) {
+  const tasks = await vscode.tasks.fetchTasks({ type: 'amper' });
+  // The item is a ModuleItem from our TreeView
+  const moduleName = item?.module?.name;
+  
+  const task = tasks.find(t => t.definition.task === command && t.definition.module === moduleName);
+  if (task) {
+    await vscode.tasks.executeTask(task);
+  } else {
+    vscode.window.showErrorMessage(`Could not find amper ${command} task for module ${moduleName}`);
+  }
 }
 
 export function deactivate() {}
