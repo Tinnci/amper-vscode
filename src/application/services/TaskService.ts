@@ -7,7 +7,9 @@ export class TaskService {
 
   async getTasksForWorkspace(workspaceRoot: string): Promise<{ project: AmperProject, tasks: { moduleName: string, task: AmperTask }[] } | null> {
     const project = await this.projectRepo.findProject(workspaceRoot);
-    if (!project) return null;
+    if (!project) {
+      return null;
+    }
 
     const tasks: { moduleName: string, task: AmperTask }[] = [];
     for (const module of project.modules) {

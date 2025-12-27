@@ -43,7 +43,9 @@ export function activate(context: vscode.ExtensionContext) {
         placeHolder: 'Select a project template'
       });
 
-      if (!selected) return;
+      if (!selected) {
+        return;
+      }
 
       const result = await vscode.window.showOpenDialog({
         canSelectFiles: false,
@@ -52,7 +54,9 @@ export function activate(context: vscode.ExtensionContext) {
         openLabel: 'Select folder to initialize project'
       });
 
-      if (!result || result.length === 0) return;
+      if (!result || result.length === 0) {
+        return;
+      }
 
       const projectPath = result[0].fsPath;
 
@@ -96,7 +100,9 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('amper-vscode.showTasks', async (item: any) => {
       const moduleName = item?.module?.name;
       const rootPath = item?.rootPath;
-      if (!rootPath) return;
+      if (!rootPath) {
+        return;
+      }
 
       try {
         outputChannel.show();
@@ -106,6 +112,14 @@ export function activate(context: vscode.ExtensionContext) {
       } catch (err: any) {
         vscode.window.showErrorMessage(`Failed to show tasks: ${err.message}`);
       }
+    }),
+
+    vscode.commands.registerCommand('amper-vscode.updateAmper', async () => {
+      await runGlobalAmperCommand('update', 'Updating Amper...');
+    }),
+
+    vscode.commands.registerCommand('amper-vscode.cleanSharedCaches', async () => {
+      await runGlobalAmperCommand('clean-shared-caches', 'Cleaning shared caches...');
     })
   );
 
@@ -126,6 +140,28 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(disposable);
+
+  async function runGlobalAmperCommand(command: string, progressTitle: string) {
+    const folders = vscode.workspace.workspaceFolders;
+    if (!folders || folders.length === 0) {
+      vscode.window.showWarningMessage('No workspace folder open.');
+      return;
+    }
+    const cwd = folders[0].uri.fsPath;
+
+    await vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: progressTitle,
+      cancellable: false
+    }, async () => {
+      try {
+        await executor.exec('amper', [command], cwd);
+        vscode.window.showInformationMessage(`Amper ${command} completed successfully.`);
+      } catch (err: any) {
+        vscode.window.showErrorMessage(`Amper ${command} failed: ${err.message}`);
+      }
+    });
+  }
 }
 
 async function executeAmperTask(command: string, item: any) {

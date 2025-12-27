@@ -9,12 +9,16 @@ export class AmperTaskProvider implements vscode.TaskProvider {
 
   async provideTasks(): Promise<vscode.Task[]> {
     const folders = vscode.workspace.workspaceFolders;
-    if (!folders) return [];
+    if (!folders) {
+      return [];
+    }
 
     const allTasks: vscode.Task[] = [];
     for (const folder of folders) {
       const result = await this.taskService.getTasksForWorkspace(folder.uri.fsPath);
-      if (!result) continue;
+      if (!result) {
+        continue;
+      }
 
       for (const item of result.tasks) {
         allTasks.push(this.createTask(item.task.type, item.moduleName, folder));

@@ -38,7 +38,8 @@
     "commands": [
       {
         "command": "amper-vscode.checkVersion",
-        "title": "Amper: Check Version"
+        "title": "Amper: Check Version",
+        "category": "Amper"
       },
       {
         "command": "amper-vscode.refreshEntry",
@@ -75,6 +76,16 @@
         "title": "Amper: Initialize Project",
         "category": "Amper",
         "icon": "$(add)"
+      },
+      {
+        "command": "amper-vscode.updateAmper",
+        "title": "Amper: Update Amper",
+        "category": "Amper"
+      },
+      {
+        "command": "amper-vscode.cleanSharedCaches",
+        "title": "Amper: Clean Shared Caches",
+        "category": "Amper"
       }
     ],
     "menus": {

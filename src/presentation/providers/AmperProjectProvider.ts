@@ -20,7 +20,9 @@ export class AmperProjectProvider implements vscode.TreeDataProvider<AmperTreeIt
   async getChildren(element?: AmperTreeItem): Promise<AmperTreeItem[]> {
     if (!element) {
       const folders = vscode.workspace.workspaceFolders;
-      if (!folders) return [];
+      if (!folders) {
+        return [];
+      }
 
       const items: AmperTreeItem[] = [];
       for (const folder of folders) {
@@ -34,7 +36,9 @@ export class AmperProjectProvider implements vscode.TreeDataProvider<AmperTreeIt
 
     if (element instanceof ProjectItem) {
       const result = await this.taskService.getTasksForWorkspace(element.rootPath);
-      if (!result) return [];
+      if (!result) {
+        return [];
+      }
       return result.project.modules.map(m => new ModuleItem(m, element.rootPath));
     }
 
