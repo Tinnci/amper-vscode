@@ -29,6 +29,12 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "amperProjectExplorer",
+        "contents": "No Amper project found in the current workspace.\n[Initialize Amper Project](command:amper-vscode.initProject)"
+      }
+    ],
     "commands": [
       {
         "command": "amper-vscode.checkVersion",
@@ -63,14 +69,25 @@
         "command": "amper-vscode.showTasks",
         "title": "Show Tasks",
         "icon": "$(list-unordered)"
+      },
+      {
+        "command": "amper-vscode.initProject",
+        "title": "Amper: Initialize Project",
+        "category": "Amper",
+        "icon": "$(add)"
       }
     ],
     "menus": {
       "view/title": [
         {
+          "command": "amper-vscode.initProject",
+          "when": "view == amperProjectExplorer",
+          "group": "navigation@1"
+        },
+        {
           "command": "amper-vscode.refreshEntry",
           "when": "view == amperProjectExplorer",
-          "group": "navigation"
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [

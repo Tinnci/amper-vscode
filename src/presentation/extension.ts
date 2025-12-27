@@ -2,16 +2,18 @@ import * as vscode from 'vscode';
 import { NodeProcessExecutor } from '../infrastructure/adapters/NodeProcessExecutor';
 import { FileSystemProjectRepository } from '../infrastructure/repositories/FileSystemProjectRepository';
 import { TaskService } from '../application/services/TaskService';
+import { ProjectService } from '../application/services/ProjectService';
 import { AmperTaskProvider } from './providers/AmperTaskProvider';
 import { AmperProjectProvider, AmperTreeItem } from './providers/AmperProjectProvider';
 
 export function activate(context: vscode.ExtensionContext) {
   // Dependency Injection
   const projectRepo = new FileSystemProjectRepository();
+  const executor = new NodeProcessExecutor();
   const taskService = new TaskService(projectRepo);
+  const projectService = new ProjectService(executor);
   const taskProvider = new AmperTaskProvider(taskService);
   const projectProvider = new AmperProjectProvider(taskService);
-  const executor = new NodeProcessExecutor();
 
   const outputChannel = vscode.window.createOutputChannel('Amper');
 
@@ -23,10 +25,58 @@ export function activate(context: vscode.ExtensionContext) {
   // Register Tree View
   vscode.window.registerTreeDataProvider('amperProjectExplorer', projectProvider);
 
+  // Status Bar Item
+  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+  statusBarItem.command = 'amper-vscode.initProject';
+  statusBarItem.text = '$(rocket) Amper Init';
+  statusBarItem.tooltip = 'Initialize a new Amper project';
+  statusBarItem.show();
+  context.subscriptions.push(statusBarItem);
+
   // Commands
   context.subscriptions.push(
     vscode.commands.registerCommand('amper-vscode.refreshEntry', () => projectProvider.refresh()),
     
+    vscode.commands.registerCommand('amper-vscode.initProject', async () => {
+      const templates = projectService.getTemplates();
+      const selected = await vscode.window.showQuickPick(templates, {
+        placeHolder: 'Select a project template'
+      });
+
+      if (!selected) return;
+
+      const result = await vscode.window.showOpenDialog({
+        canSelectFiles: false,
+        canSelectFolders: true,
+        canSelectMany: false,
+        openLabel: 'Select folder to initialize project'
+      });
+
+      if (!result || result.length === 0) return;
+
+      const projectPath = result[0].fsPath;
+
+      await vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: `Initializing Amper project: ${selected.label}`,
+        cancellable: false
+      }, async (progress) => {
+        try {
+          progress.report({ message: 'Downloading wrapper...' });
+          await projectService.initializeProject(projectPath, selected.id);
+          vscode.window.showInformationMessage(`Project initialized successfully in ${projectPath}`);
+          
+          // Ask to open the folder
+          const open = await vscode.window.showInformationMessage('Open the new project?', 'Yes', 'No');
+          if (open === 'Yes') {
+            vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectPath));
+          }
+        } catch (err: any) {
+          vscode.window.showErrorMessage(`Failed to initialize project: ${err.message}`);
+        }
+      });
+    }),
+
     vscode.commands.registerCommand('amper-vscode.runModule', async (item: any) => {
       await executeAmperTask('run', item);
     }),
