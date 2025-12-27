@@ -19,20 +19,25 @@ This document outlines the development plan for the Amper VS Code extension.
 - [x] **Schema Support**: JSON Schema for `module.yaml` to provide IntelliSense.
 - [x] **Advanced Task Support**: Support for `amper show tasks` and module-specific task execution.
 
-## 🚩 Phase 4: Advanced Tooling & Integration (In Progress)
+## 🚩 Phase 4: Advanced Tooling & Migration (The "Power User" Update)
 - [x] **Project Initialization Wizard**: A user-friendly UI for `amper init` with template selection.
 - [x] **Global Maintenance**: Commands for `update` and `clean-shared-caches`.
-- [ ] **Task Graph Visualization**: Interactive view of the task dependency graph (based on `amper show tasks`).
-- [ ] **Dynamic Template Discovery**: Fetch available templates directly from Amper CLI instead of hardcoding.
-- [ ] **Dependency Management**: A dedicated view or UI to manage project dependencies and sync with `module.yaml`.
-- [ ] **Amper Tool Support**: Integration for running custom tools via `amper tool`.
-- [ ] **Profiling Integration**: Support for `--profile` with visualization of Async Profiler snapshots.
+- [ ] **Maven Migration Assistant**: Integration with `amper-maven-converter` to migrate `pom.xml` to Amper.
+- [ ] **JDK & Toolchain Management**: Visual manager for Amper-provisioned JDKs (via `amper tool jdk`).
+- [ ] **Android Keystore Wizard**: UI for generating signing keys (via `amper tool keystore`).
+- [ ] **Dynamic Template Discovery**: Fetch available templates directly from Amper CLI.
 
-## 🚩 Phase 5: Ecosystem & Intelligence (Future)
-- [ ] **LSP for module.yaml**: Full Language Server Protocol implementation for advanced refactoring and cross-file navigation.
-- [ ] **Multi-platform Target Switcher**: Quick-pick UI to switch active compilation targets (JVM/Android/iOS).
-- [ ] **CI/CD Scaffolding**: Commands to generate GitHub Actions or JetBrains Space Automation scripts for Amper.
-- [x] **Amper Maintenance**: Manual commands for updating Amper and cleaning caches.
+## 🚩 Phase 5: Observability & Diagnostics (The "Performance" Update)
+- [ ] **Build Performance Profiler**: Integration with Jaeger UI (via `amper tool jaeger`) to visualize build traces.
+- [ ] **Dependency Conflict Resolver**: Interactive tree view for `amper show dependencies` with conflict highlighting.
+- [ ] **Interactive Diagnostic View**: Structured error reporting with "Explain Error" and "Jump to Source" capabilities.
+- [ ] **Task Graph Visualization**: Interactive view of the task dependency graph.
+
+## 🚩 Phase 6: Extensibility & Mobile (The "Ecosystem" Update)
+- [ ] **Mobile Device Manager**: ADB/Simulator selection UI for `amper run` on Android and iOS.
+- [ ] **XCode Sync Integration**: One-click "Open in XCode" and project synchronization.
+- [ ] **Plugin Development Support**: IntelliSense and scaffolding for Amper extensibility API.
+- [ ] **CI/CD Scaffolding**: Generate GitHub Actions or Space Automation scripts.
 
 ---
 *Last Updated: December 28, 2025*
