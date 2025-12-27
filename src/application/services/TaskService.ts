@@ -19,6 +19,7 @@ export class TaskService {
       }
       
       tasks.push({ moduleName: module.name, task: new AmperTask(AmperTaskType.Test) });
+      tasks.push({ moduleName: module.name, task: new AmperTask(AmperTaskType.Clean) });
     }
 
     return { project, tasks };

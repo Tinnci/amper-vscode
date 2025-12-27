@@ -50,6 +50,8 @@ export class AmperTaskProvider implements vscode.TaskProvider {
       task.group = vscode.TaskGroup.Build;
     } else if (type === AmperTaskType.Test) {
       task.group = vscode.TaskGroup.Test;
+    } else if (type === AmperTaskType.Clean) {
+      task.group = vscode.TaskGroup.Clean;
     }
 
     return task;

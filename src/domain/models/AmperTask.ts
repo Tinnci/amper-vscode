@@ -3,6 +3,7 @@ export enum AmperTaskType {
   Run = 'Run',
   Test = 'Test',
   Clean = 'Clean',
+  ShowTasks = 'Show Tasks',
 }
 
 export class AmperTask {

@@ -11,6 +11,9 @@ export function activate(context: vscode.ExtensionContext) {
   const taskService = new TaskService(projectRepo);
   const taskProvider = new AmperTaskProvider(taskService);
   const projectProvider = new AmperProjectProvider(taskService);
+  const executor = new NodeProcessExecutor();
+
+  const outputChannel = vscode.window.createOutputChannel('Amper');
 
   // Register Task Provider
   context.subscriptions.push(
@@ -34,6 +37,25 @@ export function activate(context: vscode.ExtensionContext) {
     
     vscode.commands.registerCommand('amper-vscode.buildModule', async (item: any) => {
       await executeAmperTask('build', item);
+    }),
+
+    vscode.commands.registerCommand('amper-vscode.cleanModule', async (item: any) => {
+      await executeAmperTask('clean', item);
+    }),
+
+    vscode.commands.registerCommand('amper-vscode.showTasks', async (item: any) => {
+      const moduleName = item?.module?.name;
+      const rootPath = item?.rootPath;
+      if (!rootPath) return;
+
+      try {
+        outputChannel.show();
+        outputChannel.appendLine(`Fetching tasks for module: ${moduleName}...`);
+        const out = await executor.exec('amper', ['show', 'tasks'], rootPath);
+        outputChannel.appendLine(out);
+      } catch (err: any) {
+        vscode.window.showErrorMessage(`Failed to show tasks: ${err.message}`);
+      }
     })
   );
 
@@ -45,7 +67,6 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
       const cwd = folders[0].uri.fsPath;
-      const executor = new NodeProcessExecutor();
       const out = await executor.exec('amper', ['--version'], cwd);
       vscode.window.showInformationMessage(`Amper version: ${out}`);
     } catch (err: unknown) {

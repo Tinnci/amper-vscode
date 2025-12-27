@@ -53,6 +53,16 @@
         "command": "amper-vscode.buildModule",
         "title": "Build Module",
         "icon": "$(build)"
+      },
+      {
+        "command": "amper-vscode.cleanModule",
+        "title": "Clean Module",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "amper-vscode.showTasks",
+        "title": "Show Tasks",
+        "icon": "$(list-unordered)"
       }
     ],
     "menus": {
@@ -67,17 +77,27 @@
         {
           "command": "amper-vscode.runModule",
           "when": "view == amperProjectExplorer && viewItem == module",
-          "group": "inline"
+          "group": "inline@1"
         },
         {
           "command": "amper-vscode.testModule",
           "when": "view == amperProjectExplorer && viewItem == module",
-          "group": "inline"
+          "group": "inline@2"
         },
         {
           "command": "amper-vscode.buildModule",
           "when": "view == amperProjectExplorer && viewItem == module",
-          "group": "inline"
+          "group": "inline@3"
+        },
+        {
+          "command": "amper-vscode.cleanModule",
+          "when": "view == amperProjectExplorer && viewItem == module",
+          "group": "inline@4"
+        },
+        {
+          "command": "amper-vscode.showTasks",
+          "when": "view == amperProjectExplorer && viewItem == module",
+          "group": "1_modification"
         }
       ]
     },
