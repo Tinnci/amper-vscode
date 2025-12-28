@@ -1,8 +1,11 @@
+import * as vscode from 'vscode';
+
 export interface ExecutionOptions {
   cwd?: string;
   env?: { [key: string]: string };
   onStdout?: (data: string) => void;
   onStderr?: (data: string) => void;
+  cancellationToken?: vscode.CancellationToken;
 }
 
 export interface IProcessExecutor {

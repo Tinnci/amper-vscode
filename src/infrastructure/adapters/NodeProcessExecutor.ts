@@ -48,6 +48,14 @@ export class NodeProcessExecutor implements IProcessExecutor {
       };
 
       const child = spawn(cmd, args, spawnOptions);
+
+      if (options?.cancellationToken) {
+        options.cancellationToken.onCancellationRequested(() => {
+          child.kill();
+          reject(new Error('Process cancelled by user'));
+        });
+      }
+
       let stdout = '';
       let stderr = '';
 

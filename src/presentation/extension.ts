@@ -19,6 +19,7 @@ import { TaskGraphService } from '../application/services/TaskGraphService';
 import { TaskGraphPanel } from './views/TaskGraphPanel';
 import { ModuleConfigEditorProvider } from './editors/ModuleConfigEditorProvider';
 import { ModuleCodeLensProvider } from './providers/ModuleCodeLensProvider';
+import { AmperProgressParser } from '../domain/utils/AmperProgressParser';
 
 export function activate(context: vscode.ExtensionContext) {
     // 1. Initialize Logger first (Singleton)
@@ -199,7 +200,26 @@ export function activate(context: vscode.ExtensionContext) {
 
                 Logger.debug(`Command: amper ${cmdArgs.join(' ')}`);
 
-                const resultOutput = await executor.exec('amper', cmdArgs, { cwd: rootPath });
+                const resultOutput = await executor.exec('amper', cmdArgs, {
+                    cwd: rootPath,
+                    onStdout: (data) => {
+                        const lines = data.split('\n');
+                        for (const line of lines) {
+                            const task = AmperProgressParser.parseLine(line);
+                            if (task) {
+                                progress.report({ message: `Executing ${task}...` });
+                            }
+                            const step = AmperProgressParser.parseStep(line);
+                            if (step) {
+                                progress.report({ message: `Running step ${step.current}/${step.total}...` });
+                            }
+                            if (step) {
+                                progress.report({ message: `Running step ${step.current}/${step.total}...` });
+                            }
+                        }
+                    },
+                    cancellationToken: token
+                });
 
                 const duration = Date.now() - startTime;
                 Logger.info(`Task completed in ${duration}ms`);
