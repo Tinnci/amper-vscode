@@ -30,6 +30,11 @@ Cleans the build artifacts for the project or a specific module.
 Lists all available tasks for the current project/module.
 - **Extension Integration**: Accessible via the "Show Tasks" context menu item on modules.
 
+### `amper show dependencies`
+Resolves and prints the dependency graph for the module.
+- **Capabilities**: Shows direct and transitive dependencies, identifies version conflicts, and supports multiple resolution scopes (compile/runtime).
+- **Extension Integration**: A dedicated "Dependencies" view in the Activity Bar provides an interactive tree visualization of this data.
+
 ### `amper update`
 Updates the Amper wrapper and CLI to the latest version.
 - **Extension Integration**: Accessible via the "Amper: Update Amper" command in the Command Palette.

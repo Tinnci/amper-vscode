@@ -18,7 +18,9 @@ An **unofficial** VS Code extension providing comprehensive support for [Amper](
 - **Initialize Project**: New project wizard with dynamic template discovery
 - **Welcome View**: Quick actions available when no project is open
 
-### 🛠️ JDK & Status Bar
+### 🛠️ Dependency Tree & Toolchains
+- **Dependency Tree View**: Interactive, hierarchical view of project dependencies (resolved via `amper show dependencies`)
+- **Conflict Highlighting**: Automatic detection and warning for version conflicts
 - **Smart Status Bar**: Displays Amper version and project module count
 - **JDK Manager**: View Amper-provisioned JDK versions and paths
 - **Cache Management**: Clean bootstrap and shared caches easily
@@ -64,6 +66,7 @@ See [Schema Extraction Guide](docs/SCHEMA_QUICKSTART.md) for details.
 - `Amper: Clean Shared Caches` - Clean global Amper caches
 - `Amper: Clean Bootstrap Cache` - Clean JRE/distribution caches
 - `Amper: Show JDK Info` - Display JDK information
+- `Amper: Refresh Dependencies` - Manually refresh the dependency tree view
 
 ## Getting Started
 
@@ -101,6 +104,7 @@ git commit -m "chore: update schema for Amper vX.Y.Z"
 ## Documentation
 
 - [Roadmap](docs/ROADMAP.md) - Development roadmap
+- [Dependency Tree Implementation](docs/DEPENDENCY_TREE_IMPLEMENTATION.md) - Details on the dependency tree view
 - [Amper CLI Reference](docs/AMPER_CLI.md) - Amper commands
 - [Schema Extraction](docs/SCHEMA_EXTRACTION.md) - Technical details of schema generation
 - [Quick Start Guide](docs/SCHEMA_QUICKSTART.md) - Using the schema extractor
