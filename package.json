@@ -1,6 +1,7 @@
-{
+{  
   "name": "amper-vscode",
   "displayName": "Amper for VS Code",
+  "publisher": "Tinnci",
   "description": "An unofficial extension to support Amper projects in VS Code.",
   "version": "0.0.1",
   "icon": "resources/logo.png",

@@ -24,7 +24,7 @@ You need to obtain "Personal Access Tokens" (PAT) from both registries.
 
 ### 3. Namespace Reservation
 Before your first publish, you must manually create the "publisher" namespace.
-- **VS Marketplace**: Go to [manage.vscode.com](https://marketplace.visualstudio.com/manage) -> Create Publisher. Use the exact `publisher` ID from `package.json` (currently `amper-vscode`).
+- **VS Marketplace**: Go to [manage.vscode.com](https://marketplace.visualstudio.com/manage) -> Create Publisher. Use the exact `publisher` ID from `package.json` (currently `Tinnci`).
 - **Open VSX**: Go to Settings -> Namespaces -> Create.
 
 ---
