@@ -3,7 +3,7 @@
   "displayName": "Amper for VS Code",
   "publisher": "Tinnci",
   "description": "An unofficial extension to support Amper projects in VS Code.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "icon": "resources/logo.png",
   "repository": {
     "type": "git",
@@ -14,7 +14,19 @@
   },
   "license": "MIT",
   "categories": [
+    "Programming Languages",
+    "Testing",
     "Other"
+  ],
+  "keywords": [
+    "amper",
+    "kotlin",
+    "multiplatform",
+    "kmp",
+    "build tool",
+    "android",
+    "ios",
+    "jetbrains"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
