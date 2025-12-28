@@ -356,7 +356,7 @@ export function activate(context: vscode.ExtensionContext) {
             const cwd = folders[0].uri.fsPath;
 
             const isWindows = process.platform === 'win32';
-            const wrapper = isWindows ? 'amper.bat' : './amper';
+            const wrapper = isWindows ? '.\\amper.bat' : './amper';
 
             const term = vscode.window.createTerminal({
                 name: 'Amper Jaeger',
