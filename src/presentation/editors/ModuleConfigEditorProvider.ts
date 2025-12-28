@@ -16,15 +16,11 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
         return providerRegistration;
     }
 
-    /**
-     * Called when our custom editor is opened.
-     */
     public async resolveCustomTextEditor(
         document: vscode.TextDocument,
         webviewPanel: vscode.WebviewPanel,
         _token: vscode.CancellationToken
     ): Promise<void> {
-        // Setup initial content for the webview
         webviewPanel.webview.options = {
             enableScripts: true,
         };
@@ -45,19 +41,16 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
             }
         }
 
-        // Hook up event handlers so that we can synchronize the webview with the text document.
         const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
             if (e.document.uri.toString() === document.uri.toString()) {
                 updateWebview();
             }
         });
 
-        // Make sure we get rid of the listener when our editor is closed.
         webviewPanel.onDidDispose(() => {
             changeDocumentSubscription.dispose();
         });
 
-        // Receive message from the webview.
         webviewPanel.webview.onDidReceiveMessage(e => {
             switch (e.type) {
                 case 'updateData':
@@ -69,20 +62,10 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
         updateWebview();
     }
 
-    /**
-     * Write out the yaml to the document.
-     */
     private updateYamlDocument(document: vscode.TextDocument, data: any) {
-        const yamlStr = yaml.stringify(data); // TODO: Preserve comments and structure if possible, but basic dump for now
-        // For a better experience, we should use `yaml`'s CST/AST modification to preserve comments, 
-        // but for this MVP "Cool UI", we'll overwrite.
-        // Actually, the user might hate losing comments. 
-        // Let's acknowledge this limitation or try to use a more surgical edit if possible.
-        // For now, full overwrite is the standard "Form Editor" behavior in many VS Code extensions.
-
+        const yamlStr = yaml.stringify(data);
         const edit = new vscode.WorkspaceEdit();
 
-        // Just replace the whole thing
         edit.replace(
             document.uri,
             new vscode.Range(0, 0, document.lineCount, 0),
@@ -95,8 +78,6 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
     private getHtmlForWebview(webview: vscode.Webview): string {
         const nonce = getNonce();
 
-        // Premium Dark Theme CSS
-        // Using Inter font, glassmorphism, gradients.
         return `
             <!DOCTYPE html>
             <html lang="en">
@@ -106,246 +87,175 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
                 <title>Amper Module Editor</title>
                 <style>
                     :root {
-                        --bg-color: #0d1117;
-                        --card-bg: #161b22;
-                        --text-primary: #e6edf3;
-                        --text-secondary: #8b949e;
-                        --accent: #58a6ff;
-                        --accent-hover: #79c0ff;
-                        --border: #30363d;
-                        --success: #2ea043;
-                        --input-bg: #010409;
-                        --glass-bg: rgba(22, 27, 34, 0.7);
-                        --glow: 0 0 10px rgba(88, 166, 255, 0.2);
+                        --padding: 24px;
                     }
 
                     body {
-                        background-color: var(--bg-color);
-                        color: var(--text-primary);
-                        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        background-color: var(--vscode-editor-background);
+                        color: var(--vscode-foreground);
+                        font-family: var(--vscode-font-family);
+                        font-size: var(--vscode-font-size);
                         padding: 0;
                         margin: 0;
-                        display: flex;
-                        justify-content: center;
-                        min-height: 100vh;
+                        overflow-x: hidden;
                     }
 
-                    .container {
-                        width: 100%;
+                    .editor-container {
                         max-width: 800px;
-                        padding: 2rem;
-                        box-sizing: border-box;
+                        margin: 0 auto;
+                        padding: var(--padding);
                     }
 
-                    h1, h2, h3 {
-                        margin: 0 0 1rem 0;
-                        font-weight: 600;
+                    section {
+                        margin-bottom: 32px;
                     }
 
-                    .header {
+                    h1 {
+                        font-size: 20px;
+                        font-weight: normal;
+                        margin-bottom: 16px;
+                        color: var(--vscode-settings-headerForeground);
+                    }
+
+                    .control-group {
+                        margin-bottom: 20px;
                         display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        margin-bottom: 2rem;
-                        border-bottom: 1px solid var(--border);
-                        padding-bottom: 1rem;
-                    }
-
-                    .header h1 {
-                        font-size: 1.5rem;
-                        background: linear-gradient(90deg, #a371f7, #58a6ff);
-                        -webkit-background-clip: text;
-                        -webkit-text-fill-color: transparent;
-                        margin: 0;
-                    }
-
-                    .card {
-                        background: var(--card-bg);
-                        border: 1px solid var(--border);
-                        border-radius: 12px;
-                        padding: 1.5rem;
-                        margin-bottom: 1.5rem;
-                        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-                        backdrop-filter: blur(10px);
-                        transition: transform 0.2s, box-shadow 0.2s;
-                    }
-
-                    .card:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-                        border-color: #58a6ff;
-                    }
-
-                    .field-group {
-                        margin-bottom: 1.2rem;
+                        flex-direction: column;
+                        gap: 8px;
                     }
 
                     label {
+                        font-weight: bold;
+                        color: var(--vscode-foreground);
                         display: block;
-                        font-size: 0.85rem;
-                        color: var(--text-secondary);
-                        margin-bottom: 0.5rem;
-                        font-weight: 500;
                     }
 
-                    input[type="text"], select, textarea {
+                    .description {
+                        font-size: 12px;
+                        opacity: 0.8;
+                        margin-bottom: 4px;
+                        color: var(--vscode-descriptionForeground);
+                    }
+
+                    select, input[type="text"] {
+                        background-color: var(--vscode-settings-dropdownBackground);
+                        color: var(--vscode-settings-dropdownForeground);
+                        border: 1px solid var(--vscode-settings-dropdownBorder);
+                        padding: 6px 10px;
+                        border-radius: 2px;
                         width: 100%;
-                        background: var(--input-bg);
-                        border: 1px solid var(--border);
-                        color: var(--text-primary);
-                        padding: 10px;
-                        border-radius: 6px;
-                        font-size: 0.95rem;
-                        transition: all 0.2s;
                         box-sizing: border-box;
                     }
 
-                    input:focus, select:focus, textarea:focus {
+                    select:focus, input:focus {
+                        border-color: var(--vscode-focusBorder);
                         outline: none;
-                        border-color: var(--accent);
-                        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
                     }
 
-                    .chips {
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 8px;
-                        margin-top: 8px;
+                    .platform-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                        gap: 12px;
                     }
 
-                    .chip {
-                        background: rgba(88, 166, 255, 0.15);
-                        color: var(--accent);
-                        padding: 4px 10px;
-                        border-radius: 20px;
-                        font-size: 0.8rem;
+                    .platform-item {
                         display: flex;
                         align-items: center;
-                        border: 1px solid transparent;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                    }
-
-                    .chip:hover {
-                        background: rgba(88, 166, 255, 0.25);
-                        border-color: var(--accent);
-                    }
-
-                    .chip span {
-                        margin-right: 6px;
-                    }
-
-                    .chip .remove {
-                        font-weight: bold;
-                        opacity: 0.7;
-                    }
-                    
-                    .chip .remove:hover {
-                        opacity: 1;
-                    }
-                    
-                    .chip-input {
-                        margin-top: 0.5rem;
-                    }
-
-                    .platforms-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-                        gap: 10px;
-                    }
-                    
-                    .platform-option {
-                        background: var(--input-bg);
-                        border: 1px solid var(--border);
-                        border-radius: 8px;
-                        padding: 10px;
-                        text-align: center;
+                        gap: 8px;
+                        padding: 8px;
+                        background: var(--vscode-list-hoverBackground);
+                        border: 1px solid var(--vscode-widget-border);
+                        border-radius: 4px;
                         cursor: pointer;
                         user-select: none;
-                        transition: all 0.2s;
-                        font-size: 0.9rem;
-                    }
-                    
-                    .platform-option.selected {
-                        background: rgba(46, 160, 67, 0.15);
-                        border-color: var(--success);
-                        color: #7ee787;
-                    }
-                    
-                    .btn {
-                        background: var(--accent);
-                        color: white;
-                        border: none;
-                        padding: 8px 16px;
-                        border-radius: 6px;
-                        cursor: pointer;
-                        font-weight: 500;
-                        transition:  0.2s;
-                    }
-                    
-                    .btn:hover {
-                        background: var(--accent-hover);
-                    }
-                    
-                    .btn-secondary {
-                        background: var(--border);
-                    }
-                    
-                    .btn-secondary:hover {
-                        background: #444c56;
+                        opacity: 0.6;
                     }
 
-                    .dependency-row {
-                        display: flex;
-                        gap: 10px;
-                        margin-bottom: 8px;
-                        align-items: center;
+                    .platform-item.selected {
+                        background-color: var(--vscode-button-background);
+                        color: var(--vscode-button-foreground);
+                        border-color: var(--vscode-button-background);
+                        opacity: 1;
                     }
-                    
-                    .icon {
-                        margin-right: 8px;
-                        font-family: 'Segoe UI Symbol', sans-serif;
+
+                    .dependency-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                    }
+
+                    .dependency-item {
+                        display: flex;
+                        gap: 8px;
+                    }
+
+                    button {
+                        background-color: var(--vscode-button-background);
+                        color: var(--vscode-button-foreground);
+                        border: none;
+                        padding: 6px 12px;
+                        cursor: pointer;
+                        border-radius: 2px;
+                        white-space: nowrap;
+                    }
+
+                    button:hover {
+                        background-color: var(--vscode-button-hoverBackground);
+                    }
+
+                    button.secondary {
+                        background-color: var(--vscode-button-secondaryBackground);
+                        color: var(--vscode-button-secondaryForeground);
+                    }
+
+                    button.secondary:hover {
+                        background-color: var(--vscode-button-secondaryHoverBackground);
+                    }
+
+                    .divider {
+                        height: 1px;
+                        background-color: var(--vscode-settings-headerBorder);
+                        margin: 24px 0;
                     }
 
                 </style>
             </head>
             <body>
-                <div class="container">
-                    <div class="header">
-                        <h1>Product Configuration</h1>
-                        <div class="status" id="status-indicator">Ready</div>
-                    </div>
-
-                    <div class="card">
-                        <h2>📦 Basic Info</h2>
-                        <div class="field-group">
-                            <label>Product Type</label>
+                <div class="editor-container">
+                    <section>
+                        <h1>Module Configuration</h1>
+                        <div class="control-group">
+                            <label for="product-type">Product Type</label>
+                            <div class="description">Select the build target for this module.</div>
                             <select id="product-type">
-                                <option value="lib">Library (lib)</option>
-                                <option value="jvm/app">JVM Application (jvm/app)</option>
-                                <option value="android/app">Android Application (android/app)</option>
-                                <option value="ios/app">iOS Application (ios/app)</option>
-                                <option value="compose/app">Compose Application (compose/app)</option>
-                                <option value="cli/app">CLI Application</option>
+                                <option value="lib">Library</option>
+                                <option value="jvm/app">JVM Application</option>
+                                <option value="android/app">Android Application</option>
+                                <option value="ios/app">iOS Application</option>
+                                <option value="compose/app">Compose Multiplatform App</option>
                             </select>
                         </div>
-                    </div>
+                    </section>
 
-                    <div class="card">
-                        <h2>🌍 Target Platforms</h2>
-                        <div class="platforms-grid" id="platforms-container">
-                            <!-- JS will populate -->
-                        </div>
-                    </div>
+                    <div class="divider"></div>
 
-                    <div class="card">
-                        <h2>🔗 Dependencies</h2>
-                        <div id="dependencies-list"></div>
-                        <div class="field-group" style="margin-top: 1rem; display: flex; gap: 10px;">
-                            <input type="text" id="new-dep-input" placeholder="e.g. org.jetbrains.kotlinx:kotlinx-datetime:0.5.0">
-                            <button class="btn" id="add-dep-btn">Add</button>
+                    <section>
+                        <h1>Target Platforms</h1>
+                        <div class="description" style="margin-bottom: 12px;">Choose which platforms this module supports.</div>
+                        <div class="platform-grid" id="platforms-container"></div>
+                    </section>
+
+                    <div class="divider"></div>
+
+                    <section>
+                        <h1>Dependencies</h1>
+                        <div class="description" style="margin-bottom: 12px;">External libraries and other modules.</div>
+                        <div class="dependency-list" id="dependencies-list"></div>
+                        <div class="dependency-item" style="margin-top: 12px;">
+                            <input type="text" id="new-dep-input" placeholder="Artifact ID or module path">
+                            <button id="add-dep-btn">Add</button>
                         </div>
-                    </div>
+                    </section>
                 </div>
 
                 <script nonce="${nonce}">
@@ -370,17 +280,15 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
                     const newDepInput = document.getElementById('new-dep-input');
                     const addDepBtn = document.getElementById('add-dep-btn');
 
-                    // Render Platforms
                     platforms.forEach(p => {
                         const el = document.createElement('div');
-                        el.className = 'platform-option';
+                        el.className = 'platform-item';
                         el.textContent = p;
                         el.onclick = () => togglePlatform(p);
                         el.dataset.platform = p;
                         platformsContainer.appendChild(el);
                     });
 
-                    // Handle messages
                     window.addEventListener('message', event => {
                         const message = event.data;
                         switch (message.type) {
@@ -392,8 +300,6 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
 
                     function updateFromYaml(data) {
                         state.data = data || {};
-                        
-                        // Normalize product
                         let productType = 'lib';
                         let currentPlatforms = [];
                         
@@ -404,11 +310,9 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
                             currentPlatforms = state.data.product.platforms || [];
                         }
 
-                        // Update UI
                         productTypeSelect.value = productType;
                         
-                        // Highlight platforms
-                        document.querySelectorAll('.platform-option').forEach(el => {
+                        document.querySelectorAll('.platform-item').forEach(el => {
                             if (currentPlatforms.includes(el.dataset.platform)) {
                                 el.classList.add('selected');
                             } else {
@@ -416,7 +320,6 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
                             }
                         });
 
-                        // Dependencies
                         renderDependencies();
                     }
 
@@ -426,17 +329,24 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
                         
                         deps.forEach((dep, index) => {
                             const row = document.createElement('div');
-                            row.className = 'dependency-row';
+                            row.className = 'dependency-item';
                             
                             const input = document.createElement('input');
                             input.type = 'text';
                             input.value = typeof dep === 'string' ? dep : JSON.stringify(dep);
-                            input.onchange = (e) => updateDependency(index, e.target.value);
+                            input.addEventListener('change', (e) => {
+                                deps[index] = e.target.value;
+                                updateState();
+                            });
                             
                             const delBtn = document.createElement('button');
-                            delBtn.className = 'btn btn-secondary';
-                            delBtn.textContent = '×';
-                            delBtn.onclick = () => removeDependency(index);
+                            delBtn.className = 'secondary';
+                            delBtn.textContent = 'Remove';
+                            delBtn.onclick = () => {
+                                deps.splice(index, 1);
+                                renderDependencies();
+                                updateState();
+                            };
                             
                             row.appendChild(input);
                             row.appendChild(delBtn);
@@ -451,7 +361,6 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
                         });
                     }
 
-                    // Event Listeners
                     productTypeSelect.addEventListener('change', (e) => {
                         if (typeof state.data.product === 'string') {
                             state.data.product = { type: e.target.value, platforms: [] };
@@ -464,11 +373,7 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
 
                     function togglePlatform(p) {
                         if (typeof state.data.product === 'string') {
-                            // Convert simplified string format to object format to support platforms
-                            state.data.product = { 
-                                type: state.data.product, 
-                                platforms: [p] 
-                            };
+                            state.data.product = { type: state.data.product, platforms: [p] };
                         } else {
                             if (!state.data.product) state.data.product = { type: 'lib', platforms: []};
                             if (!state.data.product.platforms) state.data.product.platforms = [];
@@ -481,40 +386,21 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
                             }
                         }
                         
-                        // Update UI immediately (optimistic)
-                        const el = document.querySelector(\`.platform-option[data-platform="\${p}"]\`);
-                        el.classList.toggle('selected');
+                        const el = document.querySelector('.platform-item[data-platform="' + p + '"]');
+                        if (el) el.classList.toggle('selected');
                         
                         updateState();
                     }
 
-                    function addDependency() {
+                    addDepBtn.addEventListener('click', () => {
                         const val = newDepInput.value.trim();
                         if (!val) return;
-                        
                         if (!state.data.dependencies) state.data.dependencies = [];
                         state.data.dependencies.push(val);
-                        
                         newDepInput.value = '';
                         renderDependencies();
                         updateState();
-                    }
-                    
-                    addDepBtn.addEventListener('click', addDependency);
-                    
-                    window.updateDependency = (index, val) => {
-                        if (!state.data.dependencies) return;
-                        state.data.dependencies[index] = val;
-                        updateState();
-                    };
-                    
-                    window.removeDependency = (index) => {
-                        if (!state.data.dependencies) return;
-                        state.data.dependencies.splice(index, 1);
-                        renderDependencies();
-                        updateState();
-                    };
-
+                    });
                 </script>
             </body>
             </html>

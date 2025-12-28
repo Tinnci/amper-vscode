@@ -203,6 +203,11 @@
           "command": "amper-vscode.showTaskGraph",
           "when": "view == amperProjectExplorer && viewItem == module",
           "group": "1_modification"
+        },
+        {
+          "command": "amper-vscode.openModuleEditor",
+          "when": "resourceFilename == module.yaml",
+          "group": "inline"
         }
       ],
       "editor/title": [
