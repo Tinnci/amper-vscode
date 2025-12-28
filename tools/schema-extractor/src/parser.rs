@@ -103,30 +103,50 @@ fn parse_enums(content: &str, context: &mut ParsingContext) -> Result<()> {
 
 /// Parse class definitions
 fn parse_classes(content: &str, context: &mut ParsingContext) -> Result<()> {
-    // Match both sealed and regular classes, including those with Base parent
-    let class_regex = Regex::new(
-        r"(?s)(@SchemaDoc\([^\)]+\)\s*)?(abstract\s+|sealed\s+)?class\s+(\w+)\s*(?:\(\))?\s*:\s*(\w+)\s*\(\)\s*\{([^}]*)\}"
+    // Match class headers - need to handle multiline and various whitespace
+    let class_header_regex = Regex::new(
+        r"(?m)((?:@\w+\([^\)]*\)\s*)*)\s*(abstract\s+|sealed\s+)?class\s+(\w+)\s*(?:\(\))?\s*:\s*(\w+)\s*\(\)\s*\{"
     )?;
 
-    for cap in class_regex.captures_iter(content) {
-        let doc = cap.get(1).map(|m| extract_doc_string(m.as_str()));
+    let mut matches = Vec::new();
+    for cap in class_header_regex.captures_iter(content) {
+        let start = cap.get(0).unwrap().start();
+        
+        // Extract annotations from group 1
+        let annotations_str = cap.get(1).map(|m| m.as_str()).unwrap_or("");
+        let doc = if annotations_str.contains("@SchemaDoc") {
+            Some(extract_doc_string(annotations_str))
+        } else {
+            None
+        };
+        
         let is_sealed = cap.get(2).map(|m| m.as_str().contains("sealed")).unwrap_or(false);
-        let name = cap[3].to_string();
-        let parent = cap[4].to_string();
-        let body = &cap[5];
+        let name = cap.get(3).map(|m| m.as_str().to_string()).unwrap_or_default();
+        let parent = cap.get(4).map(|m| m.as_str().to_string()).unwrap_or_default();
+        
+        if name.is_empty() || parent.is_empty() {
+            continue;
+        }
+        
+        matches.push((start, doc, is_sealed, name, parent));
+    }
 
+    // Extract class bodies by finding matching braces
+    for (start, doc, is_sealed, name, parent) in matches {
         // Include Base class and known schema classes
         let valid_parents = [
-            "SchemaNode", "Base", "Dependency", "ScopedDependency", 
+            "SchemaNode", "Base", "Dependency", "ScopedDependency",
             "UnscopedDependency", "BomDependency", "UnscopedBomDependency",
-            "Settings", "SchemaNode"
+            "Settings",
         ];
-        
+
         if !valid_parents.contains(&parent.as_str()) && !parent.ends_with("Settings") {
             continue;
         }
 
-        let properties = parse_properties(body)?;
+        // Find the class body by counting braces
+        let body = extract_class_body(&content[start..])?;
+        let properties = parse_properties(&body)?;
 
         context.classes.insert(
             name.clone(),
@@ -135,7 +155,7 @@ fn parse_classes(content: &str, context: &mut ParsingContext) -> Result<()> {
                 doc,
                 properties,
                 is_sealed,
-                parent: if parent != "SchemaNode" { Some(parent) } else { None },
+                parent: if parent != "SchemaNode" { Some(parent)} else { None },
                 subclasses: Vec::new(),
             },
         );
@@ -144,19 +164,53 @@ fn parse_classes(content: &str, context: &mut ParsingContext) -> Result<()> {
     Ok(())
 }
 
+/// Extract class body by matching braces
+fn extract_class_body(text: &str) -> Result<String> {
+    let open_brace = text.find('{').ok_or_else(|| anyhow::anyhow!("No opening brace found"))?;
+    let mut depth = 0;
+    let mut end_pos = open_brace;
+
+    for (i, ch) in text[open_brace..].char_indices() {
+        match ch {
+            '{' => depth += 1,
+            '}' => {
+                depth -= 1;
+                if depth == 0 {
+                    end_pos = open_brace + i;
+                    break;
+                }
+            }
+            _ => {}
+        }
+    }
+
+    if depth != 0 {
+        return Err(anyhow::anyhow!("Unmatched braces"));
+    }
+
+    Ok(text[open_brace + 1..end_pos].to_string())
+}
+
 /// Parse property definitions from class body
 fn parse_properties(body: &str) -> Result<Vec<Property>> {
     let mut properties = Vec::new();
 
-    // Match property definitions with annotations - improved regex
+    // Improved regex to match various property patterns
+    // Matches: val name by value<Type>() / val name: Type by nested() / val name by nullableValue<Type>()
     let prop_regex = Regex::new(
-        r"(?s)((?:@\w+(?:\([^\)]*\))?\s*)*)\s*val\s+(\w+)\s+(?:by\s+(?:value|nullableValue|nested|dependentValue)|:)\s*(?:<([^>]+)>)?\s*(?:\([^\)]*\)|=)"
+        r"(?s)((?:@\w+(?:\([^\)]*\))?\s*)*)\s*val\s+(\w+)\s+(?::?\s*([A-Z]\w+(?:<[^>]+>)?)\s+)?by\s+(\w+)\s*(?:<([^>]+)>)?\s*\("
     )?;
 
     for cap in prop_regex.captures_iter(body) {
         let annotations_str = &cap[1];
         let prop_name = cap[2].to_string();
-        let type_str = cap.get(3).map(|m| m.as_str().trim()).unwrap_or("String");
+        
+        // Type can come from explicit type annotation (: Type) or from generic parameter (<Type>)
+        let explicit_type = cap.get(3).map(|m| m.as_str().trim());
+        let generic_type = cap.get(5).map(|m| m.as_str().trim());
+        let delegate_func = &cap[4]; // value, nullableValue, nested, dependentValue
+        
+        let type_str = generic_type.or(explicit_type).unwrap_or("String");
 
         // Parse annotations
         let annotations = parse_annotations(annotations_str);
@@ -169,6 +223,9 @@ fn parse_properties(body: &str) -> Result<Vec<Property>> {
 
         // Parse type info
         let (type_name, is_nullable, is_list, is_map) = parse_type_info(type_str);
+        
+        // Override nullability based on delegate function
+        let is_nullable = is_nullable || delegate_func == "nullableValue";
 
         properties.push(Property {
             name: prop_name,
