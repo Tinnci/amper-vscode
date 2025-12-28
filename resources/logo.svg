@@ -1,0 +1,56 @@
+<svg width="512" height="512" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="modernAGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+
+    <clipPath id="shapeA">
+       <path fill-rule="evenodd" clip-rule="evenodd" 
+             d="M72 5 L28 95 H46 L51 80 H77 L81 95 H99 L72 5 Z M72 38 L62 65 H82 L72 38 Z" />
+    </clipPath>
+  </defs>
+
+  <path 
+    fill-rule="evenodd" 
+    clip-rule="evenodd" 
+    d="M72 5 L28 95 H46 L51 80 H77 L81 95 H99 L72 5 Z M72 38 L62 65 H82 L72 38 Z" 
+    fill="url(#modernAGradient)" 
+  />
+
+  <g clip-path="url(#shapeA)">
+    
+    <!-- 通道层 A (最靠近中间洞洞的一层) -->
+    <!-- 这是一个围绕洞洞的描边三角形 -->
+    <path d="M72 30 L55 72 H89 L72 30 Z" 
+          stroke="white" 
+          stroke-width="2" 
+          stroke-opacity="0.25" 
+          fill="none" />
+
+    <!-- 通道层 B (中间层) -->
+    <path d="M72 22 L48 79 H96 L72 22 Z" 
+          stroke="white" 
+          stroke-width="1.5" 
+          stroke-opacity="0.15" 
+          fill="none" />
+
+    <!-- 通道层 C (最外层) -->
+    <path d="M72 14 L41 86 H103 L72 14 Z" 
+          stroke="white" 
+          stroke-width="1" 
+          stroke-opacity="0.1" 
+          fill="none" />
+          
+    <!-- 增加一个从洞洞发出的径向高光，增强“入口”的感觉 -->
+    <path d="M72 38 L20 100 H124 L72 38 Z" fill="white" fill-opacity="0.05" style="mix-blend-mode: overlay;" />
+  </g>
+
+
+  <path d="M72 38 L62 65 H82 L72 38 Z" 
+        stroke="white" 
+        stroke-opacity="0.4" 
+        stroke-width="1" 
+        fill="none" />
+
+</svg>
