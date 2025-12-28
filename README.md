@@ -12,14 +12,16 @@ An **unofficial** VS Code extension providing comprehensive support for [Amper](
 
 ### 📁 Project Explorer
 - Browse Amper modules in a dedicated Activity Bar view
-- Inline actions: Run, Test, Build, Clean
-- Show available tasks for each module
-- Initialize new projects with templates
+- **Custom Icons**: Specific icons for Android, iOS, JVM, and Server modules
+- **Rich Tooltips**: Detailed module info and documentation on hover
+- **Inline actions**: Run, Test, Build, Clean
+- **Initialize Project**: New project wizard with dynamic template discovery
+- **Welcome View**: Quick actions available when no project is open
 
-### 🛠️ JDK & Toolchain Management
-- View Amper-provisioned JDK versions
-- Display JDK installation paths
-- Clean bootstrap caches when needed
+### 🛠️ JDK & Status Bar
+- **Smart Status Bar**: Displays Amper version and project module count
+- **JDK Manager**: View Amper-provisioned JDK versions and paths
+- **Cache Management**: Clean bootstrap and shared caches easily
 
 ### 🔄 Maven Migration
 - Convert Maven projects to Amper with one command
@@ -35,6 +37,11 @@ An **unofficial** VS Code extension providing comprehensive support for [Amper](
 This extension includes a **Rust-based schema extractor** that generates JSON Schema directly from Amper's Kotlin source code. This ensures the schema is always up-to-date with Amper's latest version.
 
 **To update the schema when Amper is updated:**
+```bash
+npm run extract-schema
+```
+
+Alternatively, use the building script:
 ```powershell
 cd tools/schema-extractor
 ./build.ps1

@@ -35,8 +35,8 @@ cargo build --release
 ```json
 {
   "scripts": {
-    "extract-schema": "cd tools/schema-extractor && cargo run --release -- -s ../../vendor/amper/sources -o ../../schemas/module-schema.json",
-    "prebuild": "npm run extract-schema"
+    "extract-schema": "npm run extract-schema",
+    "vscode:prepublish": "npm run extract-schema && npm run package"
   }
 }
 ```
