@@ -78,6 +78,14 @@ Amper projects are defined by a `module.yaml` file in each module directory. Thi
 - **Dependencies**: External libraries and internal module references.
 - **Settings**: Compiler options and platform-specific configurations.
 
+### **Extension Integration: Visual Config Editor**
+The extension provides a premium graphical editor for `module.yaml` files, featuring:
+- **Form-based Editing**: Dropdowns for product types and platform selection via an interactive grid.
+- **Native VS Code Look**: Seamlessly integrates with the active theme and design language.
+- **CodeLens Access**: Link at the top of the YAML source to "Open Visual Editor".
+- **Real-time Sync**: Bi-directional updates between the GUI and the underlying YAML text.
+- **Auto-Sync**: Saving the file automatically triggers project and dependency refreshes.
+
 ---
 
 ## How Amper Works (The Bootstrapper Architecture)

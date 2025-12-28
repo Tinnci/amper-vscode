@@ -33,7 +33,7 @@ This document outlines the development plan for the Amper VS Code extension.
 - [x] **Smart Status Bar**: Dynamic status bar showing project info and module count.
 - [x] **Theme-Aware Branding**: Professional custom SVG logo integrated into Activity Bar and Extension icon.
 - [x] **Product-Specific Icons**: Theme-integrated icons for different module types (Android, iOS, Server, etc.) using `ThemeColor`.
-- [ ] **Module Details Panel**: Webview panel showing detailed module configuration.
+- [x] **Module Details Panel**: Integrated into the **Visual Config Editor**, providing a high-level overview of module settings.
 
 ## 🚩 Phase 5: Observability & Diagnostics (The "Performance" Update)
 - [x] **Build Performance Profiler**: Integration with Jaeger UI (via `amper tool jaeger`) to visualize build traces.
@@ -44,7 +44,7 @@ This document outlines the development plan for the Amper VS Code extension.
 ## 🚩 Phase 6: Extensibility & Mobile (The "Ecosystem" Update)
 - [ ] **Mobile Device Manager**: ADB/Simulator selection UI for `amper run` on Android and iOS.
 - [ ] **Plugin Discovery**: Integrated gallery to browse and add Amper plugins.
-- [ ] **Module Details Panel**: Interactive Webview panel showing detailed configurations, used platforms, and artifacts.
+- [x] **Module Details Panel**: Interactive Webview panel (Visual Config Editor) showing detailed configurations, used platforms, and artifacts.
 - [ ] **Live Device Logs**: Integrated log viewer for connected mobile devices.
 
 ## 🚩 Phase 7: Productivity & Intelligence (The "Smart" Update)

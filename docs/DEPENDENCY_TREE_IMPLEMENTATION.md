@@ -15,6 +15,9 @@
 - 显示直接依赖和传递性依赖
 - 支持展开/折叠
 - 自动工作区切换
+- **加载状态 (Loading State)**: 显示旋转图标和进度说明
+- **智能重试 (Auto-Retry)**: 面对初期加载失败，自动进行指数退避式重试（3s/6s）
+- **自动同步 (Auto-Sync)**: 保存 `module.yaml` 时自动刷新依赖树
 
 ### 2. UI 集成
 
@@ -130,4 +133,4 @@ if (depth === 0) {
 ---
 
 *Last Updated: December 28, 2025*
-*Status: ✅ Core Implementation Complete*
+*Status: ✅ Core Implementation Complete (Enhanced with Auto-Reload)*
