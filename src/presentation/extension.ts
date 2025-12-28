@@ -213,6 +213,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Commands
     context.subscriptions.push(
+        vscode.commands.registerCommand('amper-vscode.openModuleEditor', async (uri: vscode.Uri) => {
+            const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
+            if (!targetUri) { return; }
+
+            await vscode.commands.executeCommand('vscode.openWith', targetUri, ModuleConfigEditorProvider.viewType);
+        }),
         vscode.commands.registerCommand('amper-vscode.refreshEntry', () => projectProvider.refresh()),
         vscode.commands.registerCommand('amper-vscode.refreshJdks', () => jdkProvider.refresh()),
         vscode.commands.registerCommand('amper-vscode.refreshDependencies', () => {

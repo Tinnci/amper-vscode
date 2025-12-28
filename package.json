@@ -57,6 +57,12 @@
     ],
     "commands": [
       {
+        "command": "amper-vscode.openModuleEditor",
+        "title": "Open Amper Visual Editor",
+        "category": "Amper",
+        "icon": "$(layout-panel)"
+      },
+      {
         "command": "amper-vscode.checkVersion",
         "title": "Amper: Check Version",
         "category": "Amper"
@@ -197,6 +203,13 @@
           "command": "amper-vscode.showTaskGraph",
           "when": "view == amperProjectExplorer && viewItem == module",
           "group": "1_modification"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "amper-vscode.openModuleEditor",
+          "group": "navigation",
+          "when": "resourceFilename == module.yaml"
         }
       ],
       "editor/context": [
