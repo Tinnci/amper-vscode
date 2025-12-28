@@ -28,6 +28,10 @@
           "name": "Projects"
         },
         {
+          "id": "amperDependencyExplorer",
+          "name": "Dependencies"
+        },
+        {
           "id": "amperJdkExplorer",
           "name": "Toolchains"
         }
@@ -37,6 +41,10 @@
       {
         "view": "amperProjectExplorer",
         "contents": "Welcome to Amper! 🚀\n\nNo Amper project found in workspace.\n\n[$(add) Initialize New Project](command:amper-vscode.initProject)\n\n[$(folder-opened) Open Existing Project](command:vscode.openFolder)\n\n[$(book) View Documentation](https://github.com/JetBrains/amper)"
+      },
+      {
+        "view": "amperDependencyExplorer",
+        "contents": "Dependencies will appear here once you open an Amper project.\n\n[$(refresh) Refresh Dependencies](command:amper-vscode.refreshDependencies)"
       },
       {
         "view": "amperJdkExplorer",
@@ -57,6 +65,11 @@
       {
         "command": "amper-vscode.refreshJdks",
         "title": "Refresh Toolchains",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "amper-vscode.refreshDependencies",
+        "title": "Refresh Dependencies",
         "icon": "$(refresh)"
       },
       {

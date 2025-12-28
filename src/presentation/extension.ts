@@ -11,6 +11,7 @@ import { FileSystemJdkRepository } from '../infrastructure/repositories/FileSyst
 import { AmperJdkProvider } from './providers/AmperJdkProvider';
 import { MavenCodeLensProvider } from './providers/MavenCodeLensProvider';
 import { FileSystemTemplateRepository } from '../domain/repositories/ITemplateRepository';
+import { DependencyService, AmperDependencyProvider } from './providers/AmperDependencyProvider';
 
 export function activate(context: vscode.ExtensionContext) {
     // Dependency Injection
@@ -19,9 +20,11 @@ export function activate(context: vscode.ExtensionContext) {
     const executor = new NodeProcessExecutor();
     const taskService = new TaskService(projectRepo);
     const projectService = new ProjectService(executor);
+    const dependencyService = new DependencyService(executor);
     const taskProvider = new AmperTaskProvider(taskService);
     const projectProvider = new AmperProjectProvider(taskService);
     const jdkProvider = new AmperJdkProvider(jdkRepo);
+    const dependencyProvider = new AmperDependencyProvider(dependencyService);
 
     // Initialize dynamic template discovery
     const templateRepo = new FileSystemTemplateRepository(context.extensionPath);
@@ -36,6 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register Tree Views
     vscode.window.registerTreeDataProvider('amperProjectExplorer', projectProvider);
+    vscode.window.registerTreeDataProvider('amperDependencyExplorer', dependencyProvider);
     vscode.window.registerTreeDataProvider('amperJdkExplorer', jdkProvider);
 
     // Register CodeLens Provider
@@ -100,6 +104,14 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('amper-vscode.refreshEntry', () => projectProvider.refresh()),
         vscode.commands.registerCommand('amper-vscode.refreshJdks', () => jdkProvider.refresh()),
+        vscode.commands.registerCommand('amper-vscode.refreshDependencies', () => {
+            // Update workspace path and refresh
+            const folders = vscode.workspace.workspaceFolders;
+            if (folders && folders.length > 0) {
+                dependencyProvider.setWorkspace(folders[0].uri.fsPath);
+            }
+            dependencyProvider.refresh();
+        }),
         vscode.commands.registerCommand('amper-vscode.convertMavenProject', async (uri: vscode.Uri) => {
             const projectPath = path.dirname(uri.fsPath);
 
