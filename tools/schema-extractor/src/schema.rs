@@ -75,12 +75,27 @@ impl<'a> SchemaBuilder<'a> {
             return;
         }
 
+        // Collect properties from this class and its parent
+        let mut all_properties = class.properties.clone();
+        
+        // If this class has a parent, merge parent's properties
+        if let Some(parent_name) = &class.parent {
+            if let Some(parent_class) = self.context.classes.get(parent_name) {
+                // Add parent properties that don't conflict
+                for parent_prop in &parent_class.properties {
+                    if !all_properties.iter().any(|p| p.name == parent_prop.name) {
+                        all_properties.push(parent_prop.clone());
+                    }
+                }
+            }
+        }
+
         // Build properties
         let mut properties = Map::new();
         let mut pattern_properties = Map::new();
         let mut required = Vec::new();
 
-        for prop in &class.properties {
+        for prop in &all_properties {
             if prop.is_hidden() {
                 continue;
             }
@@ -117,7 +132,8 @@ impl<'a> SchemaBuilder<'a> {
             if !pattern_properties.is_empty() {
                 obj.insert("patternProperties".to_string(), Value::Object(pattern_properties));
             }
-            if !required.is_empty() {
+            if !required.is_empty() && required.len() < all_properties.len() {
+                // Only add required if not all properties are required
                 obj.insert(
                     "required".to_string(),
                     Value::Array(required.into_iter().map(Value::String).collect()),

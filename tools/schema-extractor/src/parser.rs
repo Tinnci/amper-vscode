@@ -103,20 +103,26 @@ fn parse_enums(content: &str, context: &mut ParsingContext) -> Result<()> {
 
 /// Parse class definitions
 fn parse_classes(content: &str, context: &mut ParsingContext) -> Result<()> {
-    // Match both sealed and regular classes
+    // Match both sealed and regular classes, including those with Base parent
     let class_regex = Regex::new(
-        r"(?s)(@SchemaDoc\([^\)]+\)\s*)?(sealed\s+)?class\s+(\w+)\s*(?:\(\))?\s*:\s*(\w+)\s*\(\)\s*\{([^}]*)\}"
+        r"(?s)(@SchemaDoc\([^\)]+\)\s*)?(abstract\s+|sealed\s+)?class\s+(\w+)\s*(?:\(\))?\s*:\s*(\w+)\s*\(\)\s*\{([^}]*)\}"
     )?;
 
     for cap in class_regex.captures_iter(content) {
         let doc = cap.get(1).map(|m| extract_doc_string(m.as_str()));
-        let is_sealed = cap.get(2).is_some();
+        let is_sealed = cap.get(2).map(|m| m.as_str().contains("sealed")).unwrap_or(false);
         let name = cap[3].to_string();
         let parent = cap[4].to_string();
         let body = &cap[5];
 
-        // Skip if parent is not SchemaNode or known base class
-        if !["SchemaNode", "Base", "Dependency", "ScopedDependency", "UnscopedDependency", "BomDependency", "UnscopedBomDependency"].contains(&parent.as_str()) {
+        // Include Base class and known schema classes
+        let valid_parents = [
+            "SchemaNode", "Base", "Dependency", "ScopedDependency", 
+            "UnscopedDependency", "BomDependency", "UnscopedBomDependency",
+            "Settings", "SchemaNode"
+        ];
+        
+        if !valid_parents.contains(&parent.as_str()) && !parent.ends_with("Settings") {
             continue;
         }
 
@@ -142,9 +148,9 @@ fn parse_classes(content: &str, context: &mut ParsingContext) -> Result<()> {
 fn parse_properties(body: &str) -> Result<Vec<Property>> {
     let mut properties = Vec::new();
 
-    // Match property definitions with annotations
+    // Match property definitions with annotations - improved regex
     let prop_regex = Regex::new(
-        r"(?s)((?:@\w+(?:\([^\)]*\))?\s*)*)\s*val\s+(\w+)\s+by\s+(?:value|nullableValue|nested|dependentValue)\s*(?:<([^>]+)>)?\s*\((?:[^\)]*)\)"
+        r"(?s)((?:@\w+(?:\([^\)]*\))?\s*)*)\s*val\s+(\w+)\s+(?:by\s+(?:value|nullableValue|nested|dependentValue)|:)\s*(?:<([^>]+)>)?\s*(?:\([^\)]*\)|=)"
     )?;
 
     for cap in prop_regex.captures_iter(body) {
@@ -171,7 +177,7 @@ fn parse_properties(body: &str) -> Result<Vec<Property>> {
             is_nullable,
             is_list,
             is_map,
-            default_value: None, // Could be extracted if needed
+            default_value: None,
             annotations,
         });
     }
