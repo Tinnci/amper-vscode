@@ -86,6 +86,11 @@
         "command": "amper-vscode.cleanSharedCaches",
         "title": "Amper: Clean Shared Caches",
         "category": "Amper"
+      },
+      {
+        "command": "amper-vscode.showJdkInfo",
+        "title": "Amper: Show JDK Info",
+        "category": "Amper"
       }
     ],
     "menus": {

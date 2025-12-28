@@ -6,7 +6,7 @@ suite('NodeProcessExecutor', () => {
   test('executes echo', async () => {
     const cwd = path.resolve(__dirname, '..', '..');
     const exec = new NodeProcessExecutor();
-    const out = await exec.exec('echo', ['hello'], cwd);
+    const out = await exec.exec('echo', ['hello'], { cwd });
     assert.ok(out.toLowerCase().includes('hello'));
   });
 });
