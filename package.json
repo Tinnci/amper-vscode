@@ -3,7 +3,7 @@
   "displayName": "Amper for VS Code",
   "publisher": "Tinnci",
   "description": "An unofficial extension to support Amper projects in VS Code.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "icon": "resources/logo.png",
   "repository": {
     "type": "git",
@@ -167,6 +167,24 @@
         "title": "Select Device",
         "category": "Amper",
         "icon": "$(device-mobile)"
+      },
+      {
+        "command": "amper-vscode.filterDependencies",
+        "title": "Search Dependencies",
+        "category": "Amper",
+        "icon": "$(search)"
+      },
+      {
+        "command": "amper-vscode.clearDependencyFilter",
+        "title": "Clear Filter",
+        "category": "Amper",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "amper-vscode.toggleConflictFilter",
+        "title": "Show Conflicts Only",
+        "category": "Amper",
+        "icon": "$(warning)"
       }
     ],
     "menus": {
@@ -190,6 +208,26 @@
           "command": "amper-vscode.refreshJdks",
           "when": "view == amperJdkExplorer",
           "group": "navigation@1"
+        },
+        {
+          "command": "amper-vscode.filterDependencies",
+          "when": "view == amperDependencyExplorer",
+          "group": "navigation@1"
+        },
+        {
+          "command": "amper-vscode.toggleConflictFilter",
+          "when": "view == amperDependencyExplorer",
+          "group": "navigation@2"
+        },
+        {
+          "command": "amper-vscode.clearDependencyFilter",
+          "when": "view == amperDependencyExplorer",
+          "group": "navigation@3"
+        },
+        {
+          "command": "amper-vscode.refreshDependencies",
+          "when": "view == amperDependencyExplorer",
+          "group": "navigation@4"
         }
       ],
       "view/item/context": [

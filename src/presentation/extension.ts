@@ -540,7 +540,6 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             });
         }),
-
         vscode.commands.registerCommand('amper-vscode.showJdkInfo', async () => {
             const folders = vscode.workspace.workspaceFolders;
             if (!folders || folders.length === 0) { return; }
@@ -555,10 +554,25 @@ export function activate(context: vscode.ExtensionContext) {
                 Logger.error('Failed to get JDK info', err);
                 vscode.window.showErrorMessage(`Failed to get JDK info: ${err.message}`);
             }
+        }),
+        vscode.commands.registerCommand('amper-vscode.filterDependencies', async () => {
+            const filter = await vscode.window.showInputBox({
+                placeHolder: 'Search dependencies (e.g., kotlinx-coroutines)',
+                prompt: 'Enter a search term to filter dependencies'
+            });
+            if (filter !== undefined) {
+                dependencyProvider.setFilter(filter);
+            }
+        }),
+        vscode.commands.registerCommand('amper-vscode.clearDependencyFilter', () => {
+            dependencyProvider.setFilter('');
+        }),
+        vscode.commands.registerCommand('amper-vscode.toggleConflictFilter', () => {
+            dependencyProvider.toggleConflictsOnly();
         })
     );
 
-    const disposable = vscode.commands.registerCommand('amper-vscode.checkVersion', async () => {
+    const checkVersionCommand = vscode.commands.registerCommand('amper-vscode.checkVersion', async () => {
         try {
             const folders = vscode.workspace.workspaceFolders;
             if (!folders || folders.length === 0) { return; }
@@ -571,7 +585,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(checkVersionCommand);
 
     async function runGlobalAmperCommand(command: string, progressTitle: string) {
         const folders = vscode.workspace.workspaceFolders;
@@ -596,4 +610,3 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() { }
-

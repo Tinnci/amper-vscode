@@ -48,7 +48,7 @@ This document outlines the development plan for the Amper VS Code extension.
 - [ ] **Live Device Logs**: Integrated log viewer for connected mobile devices.
 
 ## 🚩 Phase 7: Productivity & Intelligence (The "Smart" Update)
-- [x] **Visual Config Editor**: A GUI-based editor for `module.yaml` with real-time validation and tooltips.
+- [x] **Visual Config Editor**: A GUI-based editor for `module.yaml` with real-time validation, tooltips, and support for Android/Kotlin settings.
 - [ ] **AI Build Assistant**: "Explain this Error" feature powered by LLMs, integrating build logs and source code.
 - [ ] **Migration Wizard**: Step-by-step UI to transition projects from Gradle/Maven to Amper.
 - [ ] **Refactoring Engine**: Automatic dependency updates when renaming or moving modules.
@@ -61,7 +61,7 @@ This document outlines the development plan for the Amper VS Code extension.
 ## 🚀 Future Optimizations & Polish
 - [ ] **Drag-and-Drop Operations**: Move files between modules to automatically update `module.yaml`.
 - [ ] **Performance Dashboard**: Real-time stats on build times and success rates across project history.
-- [ ] **Dependency Search & Filter**: Search within the dependency tree to find specific artifacts.
+- [x] **Dependency Search & Filter**: Search within the dependency tree to find specific artifacts and filter by conflicts.
 - [ ] **Version Update Insights**: Highlight dependencies that have newer versions available.
 - [ ] **Conflict Resolution UI**: Interactive actions to exclude or force versions in `module.yaml`.
 - [ ] **Performance Overlay**: Real-time build status and performance metrics in a status bar overlay.

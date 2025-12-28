@@ -215,7 +215,10 @@ export class AmperDependencyProvider implements vscode.TreeDataProvider<Dependen
 
     private workspacePath: string | undefined;
     private dependencies: DependencyInfo[] = [];
+    private filteredDependencies: DependencyInfo[] = [];
     private isLoading = false;
+    private filterText = '';
+    private showConflictsOnly = false;
 
     constructor(private dependencyService: DependencyService) { }
 
@@ -228,8 +231,56 @@ export class AmperDependencyProvider implements vscode.TreeDataProvider<Dependen
     setWorkspace(path: string | undefined): void {
         if (this.workspacePath !== path) {
             this.workspacePath = path;
+            this.filterText = '';
+            this.showConflictsOnly = false;
             this.refresh();
         }
+    }
+
+    setFilter(text: string): void {
+        this.filterText = text.toLowerCase();
+        this.applyFilters();
+        this._onDidChangeTreeData.fire();
+    }
+
+    toggleConflictsOnly(): void {
+        this.showConflictsOnly = !this.showConflictsOnly;
+        this.applyFilters();
+        this._onDidChangeTreeData.fire();
+    }
+
+    private applyFilters(): void {
+        if (!this.filterText && !this.showConflictsOnly) {
+            this.filteredDependencies = this.dependencies;
+            return;
+        }
+
+        this.filteredDependencies = this.dependencies.filter(dep => this.matchesFilter(dep));
+    }
+
+    private matchesFilter(dep: DependencyInfo): boolean {
+        // Check if current node matches
+        const matchesName = dep.name.toLowerCase().includes(this.filterText);
+        const matchesConflict = !this.showConflictsOnly || dep.isConflict;
+
+        if (matchesName && matchesConflict) {
+            return true;
+        }
+
+        // Check if any child matches (recursive)
+        if (dep.children && dep.children.length > 0) {
+            return dep.children.some(child => this.matchesFilter(child));
+        }
+
+        return false;
+    }
+
+    private getFilteredChildren(deps: DependencyInfo[]): DependencyInfo[] {
+        if (!this.filterText && !this.showConflictsOnly) {
+            return deps;
+        }
+
+        return deps.filter(dep => this.matchesFilter(dep));
     }
 
     getTreeItem(element: DependencyTreeItem): vscode.TreeItem {
@@ -251,11 +302,12 @@ export class AmperDependencyProvider implements vscode.TreeDataProvider<Dependen
                 return [new LoadingItem()];
             }
 
-            return this.dependencies.map(dep => new DependencyItem(dep));
+            return this.filteredDependencies.map(dep => new DependencyItem(dep));
         }
 
         if (element instanceof DependencyItem && element.dependency.children.length > 0) {
-            return element.dependency.children.map(child => new DependencyItem(child, true));
+            const children = this.getFilteredChildren(element.dependency.children);
+            return children.map(child => new DependencyItem(child, true));
         }
 
         return [];
@@ -280,6 +332,7 @@ export class AmperDependencyProvider implements vscode.TreeDataProvider<Dependen
             }
 
             this.dependencies = deps;
+            this.applyFilters();
         } catch (error) {
             this.dependencies = [];
         } finally {

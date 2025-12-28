@@ -247,6 +247,48 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
 
                     <div class="divider"></div>
 
+                    <section id="android-settings" style="display: none;">
+                        <h1>Android Settings</h1>
+                        <div class="control-group">
+                            <label for="android-namespace">Namespace</label>
+                            <input type="text" id="android-namespace" placeholder="com.example.app">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="control-group">
+                                <label for="android-min-sdk">Min SDK</label>
+                                <input type="text" id="android-min-sdk" placeholder="24">
+                            </div>
+                            <div class="control-group">
+                                <label for="android-target-sdk">Target SDK</label>
+                                <input type="text" id="android-target-sdk" placeholder="34">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="kotlin-settings">
+                        <h1>Kotlin Settings</h1>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="control-group">
+                                <label for="kotlin-lang-version">Language Version</label>
+                                <select id="kotlin-lang-version">
+                                    <option value="">Default</option>
+                                    <option value="1.9">1.9</option>
+                                    <option value="2.0">2.0</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="kotlin-api-version">API Version</label>
+                                <select id="kotlin-api-version">
+                                    <option value="">Default</option>
+                                    <option value="1.9">1.9</option>
+                                    <option value="2.0">2.0</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="divider"></div>
+
                     <section>
                         <h1>Dependencies</h1>
                         <div class="description" style="margin-bottom: 12px;">External libraries and other modules.</div>
@@ -262,10 +304,7 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
                     const vscode = acquireVsCodeApi();
                     
                     const state = {
-                        data: {
-                            product: { type: 'lib', platforms: [] },
-                            dependencies: []
-                        }
+                        data: {}
                     };
 
                     const platforms = [
@@ -279,6 +318,14 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
                     const dependenciesList = document.getElementById('dependencies-list');
                     const newDepInput = document.getElementById('new-dep-input');
                     const addDepBtn = document.getElementById('add-dep-btn');
+                    
+                    const androidSettings = document.getElementById('android-settings');
+                    const androidNamespace = document.getElementById('android-namespace');
+                    const androidMinSdk = document.getElementById('android-min-sdk');
+                    const androidTargetSdk = document.getElementById('android-target-sdk');
+                    
+                    const kotlinLangVersion = document.getElementById('kotlin-lang-version');
+                    const kotlinApiVersion = document.getElementById('kotlin-api-version');
 
                     platforms.forEach(p => {
                         const el = document.createElement('div');
@@ -311,7 +358,28 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
                         }
 
                         productTypeSelect.value = productType;
+                        androidSettings.style.display = productType.includes('android') ? 'block' : 'none';
                         
+                        // Update Android settings
+                        if (state.data.settings?.android) {
+                            androidNamespace.value = state.data.settings.android.namespace || '';
+                            androidMinSdk.value = state.data.settings.android.minSdk || '';
+                            androidTargetSdk.value = state.data.settings.android.targetSdk || '';
+                        } else {
+                            androidNamespace.value = '';
+                            androidMinSdk.value = '';
+                            androidTargetSdk.value = '';
+                        }
+                        
+                        // Update Kotlin settings
+                        if (state.data.settings?.kotlin) {
+                            kotlinLangVersion.value = state.data.settings.kotlin.languageVersion || '';
+                            kotlinApiVersion.value = state.data.settings.kotlin.apiVersion || '';
+                        } else {
+                            kotlinLangVersion.value = '';
+                            kotlinApiVersion.value = '';
+                        }
+
                         document.querySelectorAll('.platform-item').forEach(el => {
                             if (currentPlatforms.includes(el.dataset.platform)) {
                                 el.classList.add('selected');
@@ -362,13 +430,37 @@ export class ModuleConfigEditorProvider implements vscode.CustomTextEditorProvid
                     }
 
                     productTypeSelect.addEventListener('change', (e) => {
+                        const val = e.target.value;
                         if (typeof state.data.product === 'string') {
-                            state.data.product = { type: e.target.value, platforms: [] };
+                            state.data.product = { type: val, platforms: [] };
                         } else {
                             if (!state.data.product) state.data.product = {};
-                            state.data.product.type = e.target.value;
+                            state.data.product.type = val;
                         }
+                        androidSettings.style.display = val.includes('android') ? 'block' : 'none';
                         updateState();
+                    });
+
+                    [androidNamespace, androidMinSdk, androidTargetSdk].forEach(el => {
+                        el.addEventListener('change', () => {
+                            if (!state.data.settings) state.data.settings = {};
+                            if (!state.data.settings.android) state.data.settings.android = {};
+                            
+                            const key = el.id.replace('android-', '').replace('-sdk', 'Sdk');
+                            state.data.settings.android[key] = el.value || undefined;
+                            updateState();
+                        });
+                    });
+                    
+                    [kotlinLangVersion, kotlinApiVersion].forEach(el => {
+                        el.addEventListener('change', () => {
+                            if (!state.data.settings) state.data.settings = {};
+                            if (!state.data.settings.kotlin) state.data.settings.kotlin = {};
+                            
+                            const key = el.id === 'kotlin-lang-version' ? 'languageVersion' : 'apiVersion';
+                            state.data.settings.kotlin[key] = el.value || undefined;
+                            updateState();
+                        });
                     });
 
                     function togglePlatform(p) {
