@@ -1,71 +1,122 @@
-# amper-vscode README
+# Amper for VS Code
 
-This is the README for your extension "amper-vscode". After writing up a brief description, we recommend including the following sections.
+An **unofficial** VS Code extension providing comprehensive support for [Amper](https://github.com/JetBrains/amper) projects.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### 🚀 Smart IntelliSense
+- **Auto-completion** for `module.yaml` files
+- **Type validation** based on Amper's schema
+- **Hover documentation** extracted from Amper source code
+- **Automatic schema updates** via Rust-based extractor tool
 
-For example if there is an image subfolder under your extension project workspace:
+### 📁 Project Explorer
+- Browse Amper modules in a dedicated Activity Bar view
+- Inline actions: Run, Test, Build, Clean
+- Show available tasks for each module
+- Initialize new projects with templates
 
-\!\[feature X\]\(images/feature-x.png\)
+### 🛠️ JDK & Toolchain Management
+- View Amper-provisioned JDK versions
+- Display JDK installation paths
+- Clean bootstrap caches when needed
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+### 🔄 Maven Migration
+- Convert Maven projects to Amper with one command
+- Context menu on `pom.xml` files
+
+### ⚙️ Task Integration
+- Seamless integration with VS Code Task system
+- Build, run, and test directly from the editor
+- Problem matchers for Kotlin compiler errors
+
+## Automatic Schema Extraction
+
+This extension includes a **Rust-based schema extractor** that generates JSON Schema directly from Amper's Kotlin source code. This ensures the schema is always up-to-date with Amper's latest version.
+
+**To update the schema when Amper is updated:**
+```powershell
+cd tools/schema-extractor
+./build.ps1
+```
+
+See [Schema Extraction Guide](docs/SCHEMA_QUICKSTART.md) for details.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- **Amper** installed in your project (via wrapper scripts)
+- **JDK** (automatically provisioned by Amper)
+- **Rust** (optional, only needed to rebuild the schema extractor)
 
-## Extension Settings
+## Extension Commands
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+- `Amper: Check Version` - Display the current Amper version
+- `Amper: Initialize Project` - Create a new Amper project
+- `Amper: Convert Maven Project` - Convert a Maven project to Amper
+- `Amper: Update Amper` - Update the Amper wrapper
+- `Amper: Clean Shared Caches` - Clean global Amper caches
+- `Amper: Clean Bootstrap Cache` - Clean JRE/distribution caches
+- `Amper: Show JDK Info` - Display JDK information
 
-For example:
+## Getting Started
 
-This extension contributes the following settings:
+1. Open an Amper project or initialize a new one
+2. The extension will automatically detect `module.yaml` files
+3. Use the Amper Explorer in the Activity Bar to browse modules
+4. Right-click on modules to run, test, or build
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+## Development
+
+### Building the Extension
+
+```bash
+npm install
+npm run compile
+```
+
+### Updating the Schema
+
+When the Amper submodule is updated:
+
+```powershell
+# Update submodule
+git submodule update --remote vendor/amper
+
+# Rebuild schema
+cd tools/schema-extractor
+./build.ps1
+
+# Commit changes
+git add schemas/module-schema.json
+git commit -m "chore: update schema for Amper vX.Y.Z"
+```
+
+## Documentation
+
+- [Roadmap](docs/ROADMAP.md) - Development roadmap
+- [Amper CLI Reference](docs/AMPER_CLI.md) - Amper commands
+- [Schema Extraction](docs/SCHEMA_EXTRACTION.md) - Technical details of schema generation
+- [Quick Start Guide](docs/SCHEMA_QUICKSTART.md) - Using the schema extractor
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- This is an unofficial extension and may not support all Amper features
+- Schema extraction requires Rust toolchain (only for developers)
 
-## Release Notes
+## Contributing
 
-Users appreciate release notes as you update your extension.
+Contributions are welcome! Please check the [Roadmap](docs/ROADMAP.md) for planned features.
 
-### 1.0.0
+## Changelog
 
-Initial release of ...
+See [CHANGELOG.md](CHANGELOG.md) for release history.
 
-### 1.0.1
+## License
 
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-## Following extension guidelines
+**Note:** This is an unofficial community extension. For official Amper support, see the [Amper documentation](https://github.com/JetBrains/amper).
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+**Enjoy!** 🎉
