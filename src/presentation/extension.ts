@@ -17,11 +17,15 @@ import { DiagnosticService } from '../application/services/DiagnosticService';
 import { BuildDiagnosticPanel } from './views/BuildDiagnosticPanel';
 import { TaskGraphService } from '../application/services/TaskGraphService';
 import { TaskGraphPanel } from './views/TaskGraphPanel';
+import { ModuleConfigEditorProvider } from './editors/ModuleConfigEditorProvider';
 
 export function activate(context: vscode.ExtensionContext) {
     // 1. Initialize Logger first (Singleton)
     Logger.getInstance();
     Logger.info('Amper VS Code Extension activating...');
+
+    // Register Custom Editor
+    context.subscriptions.push(ModuleConfigEditorProvider.register(context));
 
     // Dependency Injection
     const projectRepo = new FileSystemProjectRepository();

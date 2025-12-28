@@ -250,6 +250,18 @@
         "fileMatch": "module.yaml",
         "url": "./schemas/module-schema.json"
       }
+    ],
+    "customEditors": [
+      {
+        "viewType": "amper-vscode.moduleConfigEditor",
+        "displayName": "Amper Module Editor",
+        "selector": [
+          {
+            "filenamePattern": "module.yaml"
+          }
+        ],
+        "priority": "option"
+      }
     ]
   },
   "scripts": {
