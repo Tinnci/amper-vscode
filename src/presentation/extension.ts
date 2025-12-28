@@ -10,6 +10,7 @@ import { AmperProjectProvider, AmperTreeItem } from './providers/AmperProjectPro
 import { FileSystemJdkRepository } from '../infrastructure/repositories/FileSystemJdkRepository';
 import { AmperJdkProvider } from './providers/AmperJdkProvider';
 import { MavenCodeLensProvider } from './providers/MavenCodeLensProvider';
+import { FileSystemTemplateRepository } from '../domain/repositories/ITemplateRepository';
 
 export function activate(context: vscode.ExtensionContext) {
     // Dependency Injection
@@ -21,6 +22,10 @@ export function activate(context: vscode.ExtensionContext) {
     const taskProvider = new AmperTaskProvider(taskService);
     const projectProvider = new AmperProjectProvider(taskService);
     const jdkProvider = new AmperJdkProvider(jdkRepo);
+
+    // Initialize dynamic template discovery
+    const templateRepo = new FileSystemTemplateRepository(context.extensionPath);
+    projectService.setTemplateRepository(templateRepo);
 
     const outputChannel = vscode.window.createOutputChannel('Amper');
 
@@ -70,8 +75,19 @@ export function activate(context: vscode.ExtensionContext) {
         }),
         vscode.commands.registerCommand('amper-vscode.initProject', async () => {
             const templates = projectService.getTemplates();
-            const selected = await vscode.window.showQuickPick(templates, {
-                placeHolder: 'Select a project template'
+
+            // Convert to QuickPick items with descriptions
+            const quickPickItems = templates.map(t => ({
+                label: t.label,
+                description: t.id,
+                detail: t.description,
+                id: t.id
+            }));
+
+            const selected = await vscode.window.showQuickPick(quickPickItems, {
+                placeHolder: 'Select a project template',
+                matchOnDescription: true,
+                matchOnDetail: true
             });
 
             if (!selected) {

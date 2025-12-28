@@ -26,7 +26,7 @@ This document outlines the development plan for the Amper VS Code extension.
 - [x] **Maven Migration Assistant**: CodeLens and command integration for `amper convert-project`.
 - [x] **JDK & Toolchain Management**: Visual manager for Amper-provisioned JDKs in the Activity Bar.
 - [ ] **Android Keystore Wizard**: UI for generating signing keys (via `amper tool keystore`).
-- [ ] **Dynamic Template Discovery**: Fetch available templates directly from Amper CLI.
+- [x] **Dynamic Template Discovery**: Templates extracted from Amper source code with rich UI display.
 
 ## 🚩 Phase 5: Observability & Diagnostics (The "Performance" Update)
 - [ ] **Build Performance Profiler**: Integration with Jaeger UI (via `amper tool jaeger`) to visualize build traces.

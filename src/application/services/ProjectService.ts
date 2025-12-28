@@ -1,31 +1,47 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { IProcessExecutor } from '../../domain/interfaces/IProcessExecutor';
+import { AmperTemplate, DEFAULT_TEMPLATES } from '../../domain/entities/AmperTemplate';
+import { ITemplateRepository } from '../../domain/repositories/ITemplateRepository';
 
-export interface AmperTemplate {
-    id: string;
-    label: string;
-    description: string;
-}
+export { AmperTemplate };
 
 export class ProjectService {
+    private templateRepository: ITemplateRepository | null = null;
+
     constructor(private executor: IProcessExecutor) { }
 
-    getTemplates(): AmperTemplate[] {
-        return [
-            { id: 'jvm-cli', label: 'JVM console application', description: 'A plain JVM console application' },
-            { id: 'android-app', label: 'Android application (Jetpack Compose)', description: 'An Android application using Jetpack Compose' },
-            { id: 'compose-app', label: 'Compose Multiplatform application', description: 'Android, iOS, and JVM desktop applications sharing UI' },
-            { id: 'ios-app', label: 'iOS application (Compose Multiplatform)', description: 'An iOS application using Compose Multiplatform' },
-            { id: 'jvm-gui', label: 'JVM GUI application (Compose Multiplatform)', description: 'A JVM application using Compose Multiplatform for Desktop' },
-            { id: 'kotlin-lib', label: 'Kotlin Multiplatform library', description: 'A multiplatform library targeting Android, iOS, and the JVM' },
-            { id: 'ktor-app', label: 'Ktor server application', description: 'A Ktor server application with the Netty engine' },
-            { id: 'multiplatform-cli', label: 'Multiplatform CLI application', description: 'Targeting JVM, Linux, macOS, and Windows native' },
-            { id: 'spring-boot-java', label: 'Spring Boot application (Java)', description: 'A Spring Boot application written in Java' },
-            { id: 'spring-boot-kotlin', label: 'Spring Boot application (Kotlin)', description: 'A Spring Boot application written in Kotlin' },
-        ];
+    /**
+     * Set the template repository for dynamic template discovery.
+     */
+    setTemplateRepository(repo: ITemplateRepository): void {
+        this.templateRepository = repo;
     }
 
+    /**
+     * Get available project templates.
+     * Uses dynamic discovery if available, otherwise returns defaults.
+     */
+    getTemplates(): AmperTemplate[] {
+        if (this.templateRepository) {
+            return this.templateRepository.getTemplates();
+        }
+        return DEFAULT_TEMPLATES;
+    }
+
+    /**
+     * Refresh the template list from source.
+     */
+    refreshTemplates(): AmperTemplate[] {
+        if (this.templateRepository) {
+            return this.templateRepository.refreshTemplates();
+        }
+        return DEFAULT_TEMPLATES;
+    }
+
+    /**
+     * Initialize a new Amper project using a template.
+     */
     async initializeProject(projectPath: string, templateId: string): Promise<void> {
         if (!fs.existsSync(projectPath)) {
             fs.mkdirSync(projectPath, { recursive: true });
@@ -49,14 +65,20 @@ export class ProjectService {
             }
         }
 
-        // 2. Run init
+        // 2. Run init with the template ID
         await this.executor.exec('amper', ['init', templateId], { cwd: projectPath });
     }
 
+    /**
+     * Run an Amper tool command.
+     */
     async runTool(toolName: string, args: string[], projectPath: string): Promise<string> {
         return this.executor.exec('amper', ['tool', toolName, ...args], { cwd: projectPath });
     }
 
+    /**
+     * Get JDK information for the project.
+     */
     async getJdkInfo(projectPath: string): Promise<string> {
         return this.runTool('jdk', [], projectPath);
     }
