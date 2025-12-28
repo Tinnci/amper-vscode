@@ -242,6 +242,14 @@ export function activate(context: vscode.ExtensionContext) {
 
             } catch (err: any) {
                 const duration = Date.now() - startTime;
+
+                // Handle User Cancellation gracefully
+                if (err.message && err.message.includes('cancelled')) {
+                    Logger.info(`Task cancelled by user: ${command}`);
+                    vscode.window.showInformationMessage(`Amper ${command} cancelled.`);
+                    return;
+                }
+
                 Logger.error(`Task failed`, err);
 
                 // Parse the error message as output
