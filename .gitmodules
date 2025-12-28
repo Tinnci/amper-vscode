@@ -1,0 +1,3 @@
+[submodule "vendor/amper"]
+	path = vendor/amper
+	url = https://github.com/JetBrains/amper.git
