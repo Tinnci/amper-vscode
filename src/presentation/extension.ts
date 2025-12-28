@@ -18,6 +18,7 @@ import { BuildDiagnosticPanel } from './views/BuildDiagnosticPanel';
 import { TaskGraphService } from '../application/services/TaskGraphService';
 import { TaskGraphPanel } from './views/TaskGraphPanel';
 import { ModuleConfigEditorProvider } from './editors/ModuleConfigEditorProvider';
+import { ModuleCodeLensProvider } from './providers/ModuleCodeLensProvider';
 
 export function activate(context: vscode.ExtensionContext) {
     // 1. Initialize Logger first (Singleton)
@@ -26,6 +27,24 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register Custom Editor
     context.subscriptions.push(ModuleConfigEditorProvider.register(context));
+
+    // Register Module CodeLens
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider(
+            { language: 'yaml', pattern: '**/module.yaml' },
+            new ModuleCodeLensProvider()
+        )
+    );
+
+    // Auto-refresh project on module.yaml save (Flutter-like behavior)
+    context.subscriptions.push(
+        vscode.workspace.onDidSaveTextDocument(document => {
+            if (document.fileName.endsWith('module.yaml')) {
+                Logger.info(`Detected change in ${document.fileName}, refreshing project...`);
+                vscode.commands.executeCommand('amper-vscode.refreshEntry');
+            }
+        })
+    );
 
     // Dependency Injection
     const projectRepo = new FileSystemProjectRepository();
