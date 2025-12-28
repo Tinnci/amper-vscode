@@ -245,19 +245,20 @@ class DependencyItem extends DependencyTreeItem {
 
         // Set icon based on state
         if (dependency.isConflict) {
-            this.iconPath = new vscode.ThemeIcon('warning', new vscode.ThemeColor('list.warningForeground'));
+            this.iconPath = new vscode.ThemeIcon('warning', new vscode.ThemeColor('list.errorForeground'));
             this.tooltip = new vscode.MarkdownString(
                 `⚠️ **Conflict Detected**\n\n` +
                 `**${dependency.name}**\n\n` +
                 `Version: \`${dependency.version}\`\n\n` +
-                `This dependency has a version conflict.`
+                `This dependency has a version conflict that may cause build issues.`
             );
         } else if (isTransitive) {
-            this.iconPath = new vscode.ThemeIcon('package', new vscode.ThemeColor('charts.gray'));
+            this.iconPath = new vscode.ThemeIcon('package', new vscode.ThemeColor('disabledForeground'));
             this.tooltip = new vscode.MarkdownString(
                 `📦 **Transitive Dependency**\n\n` +
                 `**${dependency.name}**\n\n` +
-                `Version: \`${dependency.version}\``
+                `Version: \`${dependency.version}\`\n\n` +
+                `${dependency.scope ? `Scope: \`${dependency.scope}\`` : ''}`
             );
         } else {
             this.iconPath = new vscode.ThemeIcon('package', new vscode.ThemeColor('charts.blue'));

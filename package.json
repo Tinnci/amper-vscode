@@ -25,15 +25,18 @@
       "amper-explorer": [
         {
           "id": "amperProjectExplorer",
-          "name": "Projects"
+          "name": "Projects",
+          "icon": "rocket"
         },
         {
           "id": "amperDependencyExplorer",
-          "name": "Dependencies"
+          "name": "Dependencies",
+          "icon": "references"
         },
         {
           "id": "amperJdkExplorer",
-          "name": "Toolchains"
+          "name": "Toolchains",
+          "icon": "tools"
         }
       ]
     },

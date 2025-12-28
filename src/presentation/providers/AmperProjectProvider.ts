@@ -11,7 +11,7 @@ function getModuleIcon(moduleType: string): vscode.ThemeIcon {
 
   // Android icons
   if (type.includes('android')) {
-    return new vscode.ThemeIcon('device-mobile', new vscode.ThemeColor('charts.green'));
+    return new vscode.ThemeIcon('device-mobile', new vscode.ThemeColor('debugIcon.startForeground'));
   }
 
   // iOS icons
@@ -25,8 +25,8 @@ function getModuleIcon(moduleType: string): vscode.ThemeIcon {
   }
 
   // Server/Ktor apps
-  if (type.includes('server') || type.includes('ktor')) {
-    return new vscode.ThemeIcon('server', new vscode.ThemeColor('charts.orange'));
+  if (type.includes('server') || type.includes('ktor') || type.includes('backend')) {
+    return new vscode.ThemeIcon('server-process', new vscode.ThemeColor('charts.orange'));
   }
 
   // CLI/Console apps
@@ -34,18 +34,24 @@ function getModuleIcon(moduleType: string): vscode.ThemeIcon {
     return new vscode.ThemeIcon('terminal', new vscode.ThemeColor('terminal.ansiCyan'));
   }
 
-  // Libraries
-  if (type.includes('lib')) {
-    return new vscode.ThemeIcon('library', new vscode.ThemeColor('charts.yellow'));
+  // Libraries (common/lib)
+  if (type.includes('lib') && !type.includes('jvm')) {
+    return new vscode.ThemeIcon('package', new vscode.ThemeColor('charts.yellow'));
   }
 
-  // JVM apps
-  if (type.includes('jvm') || type.includes('app')) {
-    return new vscode.ThemeIcon('coffee', new vscode.ThemeColor('charts.red'));
+  // JVM apps/libs
+  if (type.includes('jvm')) {
+    const isApp = type.includes('app');
+    return new vscode.ThemeIcon(isApp ? 'coffee' : 'library', new vscode.ThemeColor('charts.red'));
+  }
+
+  // Amper Plugins
+  if (type.includes('plugin')) {
+    return new vscode.ThemeIcon('extensions', new vscode.ThemeColor('charts.purple'));
   }
 
   // Default
-  return new vscode.ThemeIcon('package');
+  return new vscode.ThemeIcon('file-submodule', new vscode.ThemeColor('charts.foreground'));
 }
 
 /**
