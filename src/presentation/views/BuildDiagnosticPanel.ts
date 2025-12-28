@@ -10,7 +10,46 @@ export class BuildDiagnosticPanel {
     private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
         this._panel = panel;
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+
+        // Handle messages from the webview
+        this._panel.webview.onDidReceiveMessage(
+            message => {
+                switch (message.command) {
+                    case 'openFile':
+                        this.openFile(message.file, message.line, message.column);
+                        return;
+                    case 'openLink':
+                        vscode.env.openExternal(vscode.Uri.parse(message.url));
+                        return;
+                }
+            },
+            null,
+            this._disposables
+        );
+
         this._panel.webview.html = this._getHtmlForWebview(this._panel.webview);
+    }
+
+    private async openFile(file: string, line: number, column: number) {
+        try {
+            const uri = vscode.Uri.file(file);
+            const doc = await vscode.workspace.openTextDocument(uri);
+            const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
+
+            // Highlight the range
+            if (line > 0) {
+                // VS Code lines are 0-indexed, Amper are 1-indexed
+                const lineIndex = line - 1;
+                const colIndex = column > 0 ? column - 1 : 0;
+                const pos = new vscode.Position(lineIndex, colIndex);
+                const range = new vscode.Range(pos, pos);
+
+                editor.selection = new vscode.Selection(pos, pos);
+                editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+            }
+        } catch (e: any) {
+            vscode.window.showErrorMessage(`Could not open file: ${file}. Error: ${e.message}`);
+        }
     }
 
     public static createOrShow(extensionUri: vscode.Uri) {
@@ -60,8 +99,6 @@ export class BuildDiagnosticPanel {
     }
 
     private _getHtmlForWebview(webview: vscode.Webview): string {
-        // In a real extension, we would load this from an HTML file
-        // For simplicity, we embed it here with a basic dark/light theme aware CSS
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,6 +154,20 @@ export class BuildDiagnosticPanel {
             text-decoration: underline;
             font-family: monospace;
         }
+        .related-link {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 2px 8px;
+            background-color: var(--vscode-button-secondaryBackground);
+            color: var(--vscode-button-secondaryForeground);
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        .related-link:hover {
+            background-color: var(--vscode-button-secondaryHoverBackground);
+        }
         .message {
             margin-top: 5px;
             white-space: pre-wrap;
@@ -155,6 +206,22 @@ export class BuildDiagnosticPanel {
             }
         });
 
+        function openFile(file, line, col) {
+            vscode.postMessage({
+                command: 'openFile',
+                file: file,
+                line: line,
+                column: col
+            });
+        }
+
+        function openLink(url) {
+            vscode.postMessage({
+                command: 'openLink',
+                url: url
+            });
+        }
+
         function updateContent(result) {
             const content = document.getElementById('content');
             const statusClass = result.success ? 'success' : 'failed';
@@ -169,14 +236,23 @@ export class BuildDiagnosticPanel {
             } else {
                 diagnosticsHtml = result.diagnostics.map(d => {
                     const icon = d.severity === 'error' ? '🛑' : '⚠️';
+                    
+                    let actionsHtml = '';
+                    if (d.relatedLink) {
+                        actionsHtml = \`<div style="margin-top: 8px;">
+                            <span class="related-link" onclick="openLink('\${d.relatedLink}')">💡 Fix / Documentation</span>
+                        </div>\`;
+                    }
+
                     return \`
                         <div class="diagnostic-card \${d.severity}">
                             <div class="title">
                                 \${icon} <strong>\${d.message}</strong>
                             </div>
                             \${d.file ? \`<div class="location">
-                                📄 <span class="file-link">\${d.file}:\${d.line || 1}</span>
+                                📄 <span class="file-link" onclick="openFile('\${escapeHtml(d.file)}', \${d.line || 0}, \${d.column || 0})">\${escapeHtml(d.file)}:\${d.line || 1}</span>
                             </div>\` : ''}
+                            \${actionsHtml}
                         </div>
                     \`;
                 }).join('');
@@ -203,12 +279,14 @@ export class BuildDiagnosticPanel {
         }
 
         function escapeHtml(unsafe) {
+            if (!unsafe) return "";
             return unsafe
                  .replace(/&/g, "&amp;")
                  .replace(/</g, "&lt;")
                  .replace(/>/g, "&gt;")
                  .replace(/"/g, "&quot;")
-                 .replace(/'/g, "&#039;");
+                 .replace(/'/g, "&#039;")
+                 .replace(/\\\\/g, "\\\\\\\\"); // specific fix for win paths in JS string
         }
     </script>
 </body>
