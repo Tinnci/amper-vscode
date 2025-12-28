@@ -1,8 +1,645 @@
 {
   "$defs": {
+    "AllOpenSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "annotations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "enabled": {
+          "type": "string"
+        },
+        "presets": {
+          "items": {
+            "enum": [
+              "spring",
+              "micronaut",
+              "quarkus"
+            ],
+            "x-intellij-enum-metadata": {
+              "micronaut": "Automatically adds annotations used by the Micronaut framework",
+              "quarkus": "Automatically adds annotations used by the Quarkus framework",
+              "spring": "Automatically adds annotations used by the Spring framework"
+            }
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "type": "object"
+    },
+    "AndroidJavaResourcesPackagingSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "excludes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "merges": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "pickFirsts": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "type": "object"
+    },
+    "AndroidSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "applicationId": {
+          "type": "string"
+        },
+        "compileSdk": {
+          "type": "string"
+        },
+        "maxSdk": {
+          "enum": [
+            "Android 1.0",
+            "Android 1.1",
+            "Android 1.5, Cupcake",
+            "Android 1.6, Donut",
+            "Android 2.0, Eclair",
+            "Android 2.0.1, Eclair",
+            "Android 2.1, Eclair",
+            "Android 2.2, Froyo",
+            "Android 2.3-2.3.2, Gingerbread",
+            "Android 2.3.3-2.3.7, Gingerbread",
+            "Android 3.0, Honeycomb",
+            "Android 3.1, Honeycomb",
+            "Android 3.2, Honeycomb",
+            "Android 4.0.1-4.0.2, Ice Cream Sandwich",
+            "Android 4.0.3-4.0.4, Ice Cream Sandwich",
+            "Android 4.1, Jelly Bean",
+            "Android 4.2, Jelly Bean",
+            "Android 4.3, Jelly Bean",
+            "Android 4.4, KitKat",
+            "Android 5.0, Lollipop",
+            "Android 5.0, Lollipop",
+            "Android 5.1, Lollipop",
+            "Android 6.0, Marshmallow",
+            "Android 7.0, Nougat",
+            "Android 7.1, Nougat",
+            "Android 8.0, Oreo",
+            "Android 8.1, Oreo",
+            "Android 9, Pie",
+            "Android 10, Q",
+            "Android 11, R",
+            "Android 12, S",
+            "Android 12L, S",
+            "Android 13, Tiramisu",
+            "Android 14, Upside Down Cake",
+            "Android 15, Vanilla Ice Cream",
+            "Android 16, Baklava"
+          ],
+          "x-intellij-enum-order-sensitive": true
+        },
+        "minSdk": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "parcelize": {
+          "$ref": "#/$defs/ParcelizeSettings"
+        },
+        "resourcePackaging": {
+          "$ref": "#/$defs/AndroidJavaResourcesPackagingSettings"
+        },
+        "signing": {
+          "$ref": "#/$defs/AndroidSigningSettings"
+        },
+        "targetSdk": {
+          "type": "string"
+        },
+        "versionCode": {
+          "type": "string"
+        },
+        "versionName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "minSdk",
+        "targetSdk",
+        "compileSdk",
+        "namespace",
+        "applicationId",
+        "signing",
+        "versionCode",
+        "versionName",
+        "resourcePackaging",
+        "parcelize"
+      ],
+      "type": "object"
+    },
+    "AndroidSigningSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "string"
+        },
+        "propertiesFile": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ComposeExperimentalHotReloadSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ComposeExperimentalSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "hotReload": {
+          "$ref": "#/$defs/ComposeExperimentalHotReloadSettings"
+        }
+      },
+      "type": "object"
+    },
+    "ComposeResourcesSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "string"
+        },
+        "exposedAccessors": {
+          "type": "string"
+        },
+        "packageName": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ComposeSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "string"
+        },
+        "experimental": {
+          "$ref": "#/$defs/ComposeExperimentalSettings"
+        },
+        "resources": {
+          "$ref": "#/$defs/ComposeResourcesSettings"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Credentials": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "passwordKey": {
+          "type": "string"
+        },
+        "usernameKey": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "InternalSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "excludeDependencies": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "type": "object"
+    },
+    "IosFrameworkSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "basename": {
+          "type": "string"
+        },
+        "isStatic": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "IosSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "framework": {
+          "$ref": "#/$defs/IosFrameworkSettings"
+        },
+        "teamId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "framework"
+      ],
+      "type": "object"
+    },
+    "JavaAnnotationProcessingSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "processorOptions": {
+          "items": {
+            "patternProperties": {
+              "^[^@+:]+$": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "processors": {
+          "items": {
+            "description": "Type: UnscopedDependency",
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "type": "object"
+    },
+    "JavaSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "annotationProcessing": {
+          "$ref": "#/$defs/JavaAnnotationProcessingSettings"
+        },
+        "compileIncrementally": {
+          "type": "string"
+        },
+        "freeCompilerArgs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "type": "object"
+    },
+    "JdkSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "acknowledgedLicenses": {
+          "items": {
+            "enum": [
+              "openjdk",
+              "The [Eclipse Temurin](https://adoptium.net) distribution.",
+              "azul",
+              "The [Azul Zulu](https://www.azul.com/downloads/?package=jdk#zulu) distribution.",
+              "amazon",
+              "The [Amazon Corretto](https://aws.amazon.com/corretto) distribution.",
+              "jbr",
+              "The [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime) distribution.",
+              "The [Oracle OpenJDK](https://openjdk.org) distribution.",
+              "The [Microsoft JDK](https://learn.microsoft.com/en-us/java/openjdk/download) distribution.",
+              "The [BiSheng JDK](https://www.openeuler.org/en/other/projects/bishengjdk) distribution.",
+              "alibaba",
+              "The [Alibaba Dragonwell](https://dragonwell-jdk.io) distribution.",
+              "tencent",
+              "The [Tencent Kona](https://tencent.github.io/konajdk) distribution.",
+              "bellsoft",
+              "The [BellSoft Liberica](https://bell-sw.com) distribution.",
+              "perforce",
+              "The [Perforce OpenLogic](https://www.openlogic.com/openjdk-downloads) distribution.",
+              "The [SapMachine](https://sap.github.io/SapMachine) distribution.",
+              "openj9",
+              "The [IBM Semeru Runtime Open Edition](https://www.ibm.com/support/pages/semeru-runtimes-getting-started) distribution, based on the [Eclipse OpenJ9](https://eclipse.dev/openj9) JVM",
+              "The [Oracle](https://www.oracle.com/java/technologies/downloads/) distribution. Check the Oracle website for licensing considerations.",
+              "openj9",
+              "The [IBM Semeru Runtime™ Certified Edition](https://www.ibm.com/support/pages/semeru-runtimes-getting-started) distribution, based on the Eclipse OpenJ9 JVM. Check the IBM website for licensing considerations."
+            ]
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "selectionMode": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "JvmSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "jdk": {
+          "$ref": "#/$defs/JdkSettings"
+        },
+        "mainClass": {
+          "type": "string"
+        },
+        "runtimeClasspathMode": {
+          "type": "string"
+        },
+        "storeParameterNames": {
+          "type": "string"
+        },
+        "test": {
+          "$ref": "#/$defs/JvmTestSettings"
+        }
+      },
+      "required": [
+        "jdk",
+        "storeParameterNames",
+        "test",
+        "runtimeClasspathMode"
+      ],
+      "type": "object"
+    },
+    "JvmTestSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "freeJvmArgs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "junitPlatformVersion": {
+          "type": "string"
+        },
+        "systemProperties": {
+          "items": {
+            "patternProperties": {
+              "^[^@+:]+$": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "type": "object"
+    },
+    "KotlinSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "allOpen": {
+          "$ref": "#/$defs/AllOpenSettings"
+        },
+        "allWarningsAsErrors": {
+          "type": "string"
+        },
+        "apiVersion": {
+          "type": "string"
+        },
+        "debug": {
+          "type": "boolean"
+        },
+        "freeCompilerArgs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "ksp": {
+          "$ref": "#/$defs/KspSettings"
+        },
+        "languageFeatures": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "languageVersion": {
+          "enum": [
+            "1.0",
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4",
+            "1.5",
+            "1.6",
+            "1.7",
+            "1.8",
+            "1.9",
+            "2.0",
+            "2.1",
+            "2.2",
+            "2.3"
+          ]
+        },
+        "linkerOptions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "noArg": {
+          "$ref": "#/$defs/NoArgSettings"
+        },
+        "optIns": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "optimization": {
+          "type": "boolean"
+        },
+        "powerAssert": {
+          "$ref": "#/$defs/PowerAssertSettings"
+        },
+        "progressiveMode": {
+          "type": "string"
+        },
+        "serialization": {
+          "$ref": "#/$defs/SerializationSettings"
+        },
+        "suppressWarnings": {
+          "type": "string"
+        },
+        "verbose": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "apiVersion",
+        "allWarningsAsErrors",
+        "suppressWarnings",
+        "verbose",
+        "progressiveMode",
+        "ksp",
+        "serialization",
+        "noArg",
+        "allOpen",
+        "powerAssert"
+      ],
+      "type": "object"
+    },
+    "KoverHtmlSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "charset": {
+          "type": "string"
+        },
+        "onCheck": {
+          "type": "boolean"
+        },
+        "reportDir": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "KoverSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "string"
+        },
+        "html": {
+          "$ref": "#/$defs/KoverHtmlSettings"
+        },
+        "xml": {
+          "$ref": "#/$defs/KoverXmlSettings"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "type": "object"
+    },
+    "KoverXmlSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "onCheck": {
+          "type": "boolean"
+        },
+        "reportFile": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "KspSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "processorOptions": {
+          "items": {
+            "patternProperties": {
+              "^[^@+:]+$": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "processors": {
+          "items": {
+            "description": "Type: UnscopedDependency",
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "KtorSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "applyBom": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "LombokSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "Module": {
       "additionalProperties": false,
       "properties": {
+        "apply": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "dependencies": {
+          "items": {
+            "description": "Type: Dependency",
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
         "layout": {
           "type": "string"
         },
@@ -10,13 +647,41 @@
           "description": "Type: PluginDeclarationSchema",
           "type": "string"
         },
+        "plugins": {
+          "description": "Type: PluginSettings",
+          "type": "string"
+        },
         "product": {
           "$ref": "#/$defs/ModuleProduct"
+        },
+        "repositories": {
+          "items": {
+            "$ref": "#/$defs/Repository"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "settings": {
+          "$ref": "#/$defs/Settings"
+        },
+        "tasks": {
+          "items": {
+            "patternProperties": {
+              "^[^@+:]+$": {
+                "$ref": "#/$defs/TaskSettings"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "required": [
         "product",
-        "layout"
+        "layout",
+        "settings",
+        "plugins"
       ],
       "type": "object"
     },
@@ -56,6 +721,247 @@
             "windows/app": "A native Windows application"
           },
           "x-intellij-enum-order-sensitive": true
+        }
+      },
+      "type": "object"
+    },
+    "NativeSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "entryPoint": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "NoArgSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "annotations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "enabled": {
+          "type": "string"
+        },
+        "invokeInitializers": {
+          "type": "string"
+        },
+        "presets": {
+          "items": {
+            "enum": [
+              "jpa"
+            ],
+            "x-intellij-enum-metadata": {
+              "jpa": "Automatically adds no-arg constructors to JPA entity classes"
+            }
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "enabled",
+        "invokeInitializers"
+      ],
+      "type": "object"
+    },
+    "ParcelizeSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "additionalAnnotations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "enabled": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PowerAssertSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "string"
+        },
+        "functions": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PublishingSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "string"
+        },
+        "group": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "type": "object"
+    },
+    "Repository": {
+      "additionalProperties": false,
+      "properties": {
+        "credentials": {
+          "$ref": "#/$defs/Credentials"
+        },
+        "file": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "passwordKey": {
+          "type": "string"
+        },
+        "publish": {
+          "type": "string"
+        },
+        "resolve": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "usernameKey": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "id",
+        "publish",
+        "resolve",
+        "file",
+        "usernameKey",
+        "passwordKey"
+      ],
+      "type": "object"
+    },
+    "SerializationSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled",
+        "version"
+      ],
+      "type": "object"
+    },
+    "Settings": {
+      "additionalProperties": false,
+      "properties": {
+        "android": {
+          "$ref": "#/$defs/AndroidSettings"
+        },
+        "compose": {
+          "$ref": "#/$defs/ComposeSettings"
+        },
+        "internal": {
+          "$ref": "#/$defs/InternalSettings"
+        },
+        "ios": {
+          "$ref": "#/$defs/IosSettings"
+        },
+        "java": {
+          "$ref": "#/$defs/JavaSettings"
+        },
+        "junit": {
+          "type": "string"
+        },
+        "jvm": {
+          "$ref": "#/$defs/JvmSettings"
+        },
+        "kotlin": {
+          "$ref": "#/$defs/KotlinSettings"
+        },
+        "kover": {
+          "$ref": "#/$defs/KoverSettings"
+        },
+        "ktor": {
+          "$ref": "#/$defs/KtorSettings"
+        },
+        "lombok": {
+          "$ref": "#/$defs/LombokSettings"
+        },
+        "native": {
+          "$ref": "#/$defs/NativeSettings"
+        },
+        "publishing": {
+          "$ref": "#/$defs/PublishingSettings"
+        },
+        "springBoot": {
+          "$ref": "#/$defs/SpringBootSettings"
+        }
+      },
+      "required": [
+        "jvm",
+        "java",
+        "kotlin",
+        "android",
+        "compose",
+        "junit",
+        "ios",
+        "publishing",
+        "ktor",
+        "springBoot",
+        "lombok",
+        "internal"
+      ],
+      "type": "object"
+    },
+    "SpringBootSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "applyBom": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "TaskSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "dependsOn": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "type": "object"

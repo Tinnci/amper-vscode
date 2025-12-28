@@ -8,6 +8,7 @@ use std::collections::HashSet;
 pub struct ParsingContext {
     pub classes: IndexMap<String, ClassDef>,
     pub enums: IndexMap<String, EnumDef>,
+    pub verbose: bool,
 }
 
 /// A Kotlin class definition

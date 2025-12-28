@@ -11,6 +11,7 @@ use walkdir::WalkDir;
 /// Parse the entire source directory
 pub fn parse_source_directory(source_dir: &Path, verbose: bool) -> Result<ParsingContext> {
     let mut context = ParsingContext::default();
+    context.verbose = verbose;
 
     // Primary schema location
     let schema_path = source_dir.join("frontend-api/src/org/jetbrains/amper/frontend/schema");
@@ -29,18 +30,28 @@ pub fn parse_source_directory(source_dir: &Path, verbose: bool) -> Result<Parsin
             if verbose {
                 eprintln!("  Parsing: {}", path.file_name().unwrap().to_string_lossy());
             }
-            parse_kotlin_file(path, &mut context)?;
+            parse_kotlin_file(path, &mut context, verbose)?;
         }
     }
 
     // Resolve sealed class hierarchies
     resolve_sealed_hierarchies(&mut context);
+    
+    // Debug: Print inheritance info
+    if verbose {
+        eprintln!("\n=== Class Inheritance ===");
+        for (name, class) in &context.classes {
+            if let Some(parent) = &class.parent {
+                eprintln!("  {} extends {} ({} props)", name, parent, class.properties.len());
+            }
+        }
+    }
 
     Ok(context)
 }
 
 /// Parse a single Kotlin file
-fn parse_kotlin_file(path: &Path, context: &mut ParsingContext) -> Result<()> {
+fn parse_kotlin_file(path: &Path, context: &mut ParsingContext, verbose: bool) -> Result<()> {
     let content = fs::read_to_string(path)
         .with_context(|| format!("Failed to read file: {}", path.display()))?;
 
@@ -48,7 +59,7 @@ fn parse_kotlin_file(path: &Path, context: &mut ParsingContext) -> Result<()> {
     parse_enums(&content, context)?;
 
     // Parse classes
-    parse_classes(&content, context)?;
+    parse_classes(&content, context, verbose)?;
 
     Ok(())
 }
@@ -102,10 +113,10 @@ fn parse_enums(content: &str, context: &mut ParsingContext) -> Result<()> {
 }
 
 /// Parse class definitions
-fn parse_classes(content: &str, context: &mut ParsingContext) -> Result<()> {
+fn parse_classes(content: &str, context: &mut ParsingContext, verbose: bool) -> Result<()> {
     // Match class headers - need to handle multiline and various whitespace
     let class_header_regex = Regex::new(
-        r"(?m)((?:@\w+\([^\)]*\)\s*)*)\s*(abstract\s+|sealed\s+)?class\s+(\w+)\s*(?:\(\))?\s*:\s*(\w+)\s*\(\)\s*\{"
+        r"(?m)((?:@\w+\([^\)]*\)\s*)*)?\s*(abstract\s+|sealed\s+)?class\s+(\w+)\s*(?:\(\))?\s*:\s*(\w+)\s*\(\)\s*\{"
     )?;
 
     let mut matches = Vec::new();
@@ -120,12 +131,18 @@ fn parse_classes(content: &str, context: &mut ParsingContext) -> Result<()> {
             None
         };
         
+        let is_abstract = cap.get(2).map(|m| m.as_str().contains("abstract")).unwrap_or(false);
         let is_sealed = cap.get(2).map(|m| m.as_str().contains("sealed")).unwrap_or(false);
         let name = cap.get(3).map(|m| m.as_str().to_string()).unwrap_or_default();
         let parent = cap.get(4).map(|m| m.as_str().to_string()).unwrap_or_default();
         
         if name.is_empty() || parent.is_empty() {
             continue;
+        }
+        
+        if verbose {
+            eprintln!("    Found class: {} (parent: {}, abstract: {}, sealed: {})", 
+                     name, parent, is_abstract, is_sealed);
         }
         
         matches.push((start, doc, is_sealed, name, parent));
@@ -141,12 +158,19 @@ fn parse_classes(content: &str, context: &mut ParsingContext) -> Result<()> {
         ];
 
         if !valid_parents.contains(&parent.as_str()) && !parent.ends_with("Settings") {
+            if verbose {
+                eprintln!("    Skipping {} - invalid parent: {}", name, parent);
+            }
             continue;
         }
 
         // Find the class body by counting braces
         let body = extract_class_body(&content[start..])?;
-        let properties = parse_properties(&body)?;
+        let properties = parse_properties(&body, verbose)?;
+        
+        if verbose {
+            eprintln!("    Parsed {} with {} properties", name, properties.len());
+        }
 
         context.classes.insert(
             name.clone(),
@@ -192,13 +216,13 @@ fn extract_class_body(text: &str) -> Result<String> {
 }
 
 /// Parse property definitions from class body
-fn parse_properties(body: &str) -> Result<Vec<Property>> {
+fn parse_properties(body: &str, verbose: bool) -> Result<Vec<Property>> {
     let mut properties = Vec::new();
 
     // Improved regex to match various property patterns
     // Matches: val name by value<Type>() / val name: Type by nested() / val name by nullableValue<Type>()
     let prop_regex = Regex::new(
-        r"(?s)((?:@\w+(?:\([^\)]*\))?\s*)*)\s*val\s+(\w+)\s+(?::?\s*([A-Z]\w+(?:<[^>]+>)?)\s+)?by\s+(\w+)\s*(?:<([^>]+)>)?\s*\("
+        r"(?s)((?:@\w+(?:\([^\)]*\))?\s*)*)val\s+(\w+)(?:\s*:\s*(\w+(?:<[^>]*(?:<[^>]*>)?[^>]*>)?))?\s+by\s+(\w+)\s*(?:<([^>]*(?:<[^>]*>)?[^>]*)>)?\s*\("
     )?;
 
     for cap in prop_regex.captures_iter(body) {
@@ -211,6 +235,10 @@ fn parse_properties(body: &str) -> Result<Vec<Property>> {
         let delegate_func = &cap[4]; // value, nullableValue, nested, dependentValue
         
         let type_str = generic_type.or(explicit_type).unwrap_or("String");
+        
+        if verbose {
+            eprintln!("      Property: {} (type: {}, delegate: {})", prop_name, type_str, delegate_func);
+        }
 
         // Parse annotations
         let annotations = parse_annotations(annotations_str);
@@ -312,3 +340,4 @@ fn resolve_sealed_hierarchies(context: &mut ParsingContext) {
         }
     }
 }
+
