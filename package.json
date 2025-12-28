@@ -304,7 +304,7 @@
     ]
   },
   "scripts": {
-    "extract-schema": "pwsh -ExecutionPolicy Bypass -File tools/schema-extractor/build.ps1",
+    "extract-schema": "node -e \"const{platform}=require('os');const{execSync}=require('child_process');const cmd=platform()==='win32'?'pwsh -ExecutionPolicy Bypass -File tools/schema-extractor/build.ps1':'bash tools/schema-extractor/build.sh';execSync(cmd,{stdio:'inherit'});\"",
     "vscode:prepublish": "npm run extract-schema && npm run package",
     "compile": "webpack",
     "watch": "webpack --watch",
