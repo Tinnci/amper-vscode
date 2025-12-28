@@ -107,6 +107,11 @@
         "icon": "$(list-unordered)"
       },
       {
+        "command": "amper-vscode.showTaskGraph",
+        "title": "Show Task Graph",
+        "icon": "$(graph)"
+      },
+      {
         "command": "amper-vscode.initProject",
         "title": "Amper: Initialize Project",
         "category": "Amper",
@@ -131,6 +136,12 @@
         "command": "amper-vscode.showJdkInfo",
         "title": "Amper: Show JDK Info",
         "category": "Amper"
+      },
+      {
+        "command": "amper-vscode.openBuildTrace",
+        "title": "Open Build Trace (Jaeger)",
+        "category": "Amper",
+        "icon": "$(pulse)"
       }
     ],
     "menus": {
@@ -144,6 +155,11 @@
           "command": "amper-vscode.refreshEntry",
           "when": "view == amperProjectExplorer",
           "group": "navigation@2"
+        },
+        {
+          "command": "amper-vscode.openBuildTrace",
+          "when": "view == amperProjectExplorer",
+          "group": "navigation@3"
         },
         {
           "command": "amper-vscode.refreshJdks",
@@ -174,6 +190,11 @@
         },
         {
           "command": "amper-vscode.showTasks",
+          "when": "view == amperProjectExplorer && viewItem == module",
+          "group": "1_modification"
+        },
+        {
+          "command": "amper-vscode.showTaskGraph",
           "when": "view == amperProjectExplorer && viewItem == module",
           "group": "1_modification"
         }

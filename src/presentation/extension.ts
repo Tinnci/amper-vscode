@@ -15,6 +15,8 @@ import { DependencyService, AmperDependencyProvider } from './providers/AmperDep
 import { Logger } from '../infrastructure/services/Logger';
 import { DiagnosticService } from '../application/services/DiagnosticService';
 import { BuildDiagnosticPanel } from './views/BuildDiagnosticPanel';
+import { TaskGraphService } from '../application/services/TaskGraphService';
+import { TaskGraphPanel } from './views/TaskGraphPanel';
 
 export function activate(context: vscode.ExtensionContext) {
     // 1. Initialize Logger first (Singleton)
@@ -29,6 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
     const projectService = new ProjectService(executor);
     const dependencyService = new DependencyService(executor);
     const diagnosticService = new DiagnosticService();
+    const taskGraphService = new TaskGraphService(executor);
 
     const taskProvider = new AmperTaskProvider(taskService);
     const projectProvider = new AmperProjectProvider(taskService);
@@ -322,8 +325,45 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }),
 
+        vscode.commands.registerCommand('amper-vscode.showTaskGraph', async (item: any) => {
+            const rootPath = item?.rootPath || (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.fsPath);
+            if (!rootPath) { return; }
+
+            try {
+                Logger.info('Fetching task graph...');
+                await vscode.window.withProgress({
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Generating Task Graph...',
+                    cancellable: false
+                }, async () => {
+                    const graph = await taskGraphService.getTaskGraph(rootPath);
+                    TaskGraphPanel.createOrShow(context.extensionUri);
+                    TaskGraphPanel.update(graph);
+                });
+            } catch (err: any) {
+                Logger.error('Failed to show task graph', err);
+                vscode.window.showErrorMessage(`Failed to generate task graph: ${err.message}`);
+            }
+        }),
+
         vscode.commands.registerCommand('amper-vscode.updateAmper', async () => {
             await runGlobalAmperCommand('update', 'Updating Amper...');
+        }),
+
+        vscode.commands.registerCommand('amper-vscode.openBuildTrace', async () => {
+            const folders = vscode.workspace.workspaceFolders;
+            if (!folders || folders.length === 0) { return; }
+            const cwd = folders[0].uri.fsPath;
+
+            const isWindows = process.platform === 'win32';
+            const wrapper = isWindows ? 'amper.bat' : './amper';
+
+            const term = vscode.window.createTerminal({
+                name: 'Amper Jaeger',
+                cwd: cwd
+            });
+            term.show();
+            term.sendText(`${wrapper} tool jaeger`);
         }),
 
         vscode.commands.registerCommand('amper-vscode.cleanSharedCaches', async () => {

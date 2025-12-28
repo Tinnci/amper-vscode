@@ -36,10 +36,10 @@ This document outlines the development plan for the Amper VS Code extension.
 - [ ] **Module Details Panel**: Webview panel showing detailed module configuration.
 
 ## 🚩 Phase 5: Observability & Diagnostics (The "Performance" Update)
-- [ ] **Build Performance Profiler**: Integration with Jaeger UI (via `amper tool jaeger`) to visualize build traces.
+- [x] **Build Performance Profiler**: Integration with Jaeger UI (via `amper tool jaeger`) to visualize build traces.
 - [x] **Dependency Tree View**: Interactive tree view for `amper show dependencies` with conflict highlighting.
 - [x] **Interactive Diagnostic View**: Webview-based build reports with structured error parsing and "Explain Error" capabilities.
-- [ ] **Task Graph Visualization**: Interactive view of the task dependency graph.
+- [x] **Task Graph Visualization**: Interactive view of the task dependency graph using Mermaid.js.
 
 ## 🚩 Phase 6: Extensibility & Mobile (The "Ecosystem" Update)
 - [ ] **Mobile Device Manager**: ADB/Simulator selection UI for `amper run` on Android and iOS.
