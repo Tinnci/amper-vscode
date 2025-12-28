@@ -306,9 +306,20 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Commands
     context.subscriptions.push(
-        vscode.commands.registerCommand('amper-vscode.openModuleEditor', async (uri: vscode.Uri) => {
-            const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
-            if (!targetUri) { return; }
+        vscode.commands.registerCommand('amper-vscode.openModuleEditor', async (arg: any) => {
+            let targetUri: vscode.Uri | undefined;
+
+            if (arg instanceof vscode.Uri) {
+                targetUri = arg;
+            } else if (vscode.window.activeTextEditor) {
+                targetUri = vscode.window.activeTextEditor.document.uri;
+            }
+
+            // Fallback: If argument is not a Uri (e.g., TreeItem like NoDevicesItem), ignore
+            if (!targetUri || !(targetUri instanceof vscode.Uri)) {
+                // Logger.warn('openModuleEditor invoked with invalid argument, ignoring.');
+                return;
+            }
 
             await vscode.commands.executeCommand('vscode.openWith', targetUri, ModuleConfigEditorProvider.viewType);
         }),
