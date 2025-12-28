@@ -42,6 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
             if (document.fileName.endsWith('module.yaml')) {
                 Logger.info(`Detected change in ${document.fileName}, refreshing project...`);
                 vscode.commands.executeCommand('amper-vscode.refreshEntry');
+                vscode.commands.executeCommand('amper-vscode.refreshDependencies');
             }
         })
     );
@@ -119,6 +120,11 @@ export function activate(context: vscode.ExtensionContext) {
             initStatusBar.hide();
             projectStatusBar.text = `$(rocket) Amper: ${totalModules} module${totalModules !== 1 ? 's' : ''}`;
             projectStatusBar.show();
+
+            // Automatically set workspace for dependency explorer
+            if (folders.length > 0) {
+                dependencyProvider.setWorkspace(folders[0].uri.fsPath);
+            }
         } else {
             initStatusBar.show();
             projectStatusBar.hide();
