@@ -43,13 +43,58 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.languages.registerCodeLensProvider({ language: 'xml', pattern: '**/pom.xml' }, new MavenCodeLensProvider())
     );
 
-    // Status Bar Item
-    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    statusBarItem.command = 'amper-vscode.initProject';
-    statusBarItem.text = '$(rocket) Amper Init';
-    statusBarItem.tooltip = 'Initialize a new Amper project';
-    statusBarItem.show();
-    context.subscriptions.push(statusBarItem);
+    // Enhanced Status Bar Items
+    // 1. Init button (shown when no project)
+    const initStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+    initStatusBar.command = 'amper-vscode.initProject';
+    initStatusBar.text = '$(add) Amper Init';
+    initStatusBar.tooltip = 'Initialize a new Amper project';
+    context.subscriptions.push(initStatusBar);
+
+    // 2. Project status (shown when project exists)
+    const projectStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 50);
+    projectStatusBar.command = 'amper-vscode.checkVersion';
+    projectStatusBar.tooltip = 'Click to check Amper version';
+    context.subscriptions.push(projectStatusBar);
+
+    // Update status bar based on project state
+    async function updateStatusBar() {
+        const folders = vscode.workspace.workspaceFolders;
+        if (!folders || folders.length === 0) {
+            initStatusBar.show();
+            projectStatusBar.hide();
+            return;
+        }
+
+        // Check if any workspace has Amper project
+        let hasAmperProject = false;
+        let totalModules = 0;
+
+        for (const folder of folders) {
+            const result = await taskService.getTasksForWorkspace(folder.uri.fsPath);
+            if (result) {
+                hasAmperProject = true;
+                totalModules += result.project.modules.length;
+            }
+        }
+
+        if (hasAmperProject) {
+            initStatusBar.hide();
+            projectStatusBar.text = `$(rocket) Amper: ${totalModules} module${totalModules !== 1 ? 's' : ''}`;
+            projectStatusBar.show();
+        } else {
+            initStatusBar.show();
+            projectStatusBar.hide();
+        }
+    }
+
+    // Initial status bar update
+    updateStatusBar();
+
+    // Update on workspace change
+    context.subscriptions.push(
+        vscode.workspace.onDidChangeWorkspaceFolders(() => updateStatusBar())
+    );
 
     // Commands
     context.subscriptions.push(

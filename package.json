@@ -36,7 +36,11 @@
     "viewsWelcome": [
       {
         "view": "amperProjectExplorer",
-        "contents": "No Amper project found in the current workspace.\n[Initialize Amper Project](command:amper-vscode.initProject)"
+        "contents": "Welcome to Amper! 🚀\n\nNo Amper project found in workspace.\n\n[$(add) Initialize New Project](command:amper-vscode.initProject)\n\n[$(folder-opened) Open Existing Project](command:vscode.openFolder)\n\n[$(book) View Documentation](https://github.com/JetBrains/amper)"
+      },
+      {
+        "view": "amperJdkExplorer",
+        "contents": "JDK information will appear here after opening an Amper project.\n\n[$(refresh) Refresh](command:amper-vscode.refreshJdks)"
       }
     ],
     "commands": [

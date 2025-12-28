@@ -28,6 +28,14 @@ This document outlines the development plan for the Amper VS Code extension.
 - [ ] **Android Keystore Wizard**: UI for generating signing keys (via `amper tool keystore`).
 - [x] **Dynamic Template Discovery**: Templates extracted from Amper source code with rich UI display.
 
+## 🎨 Phase 4.5: UI Polish (The "Quality of Life" Update)
+- [x] **Enhanced Welcome View**: Rich welcome screen with quick actions when no project is open.
+- [x] **Smart Status Bar**: Dynamic status bar showing project info and module count.
+- [x] **Module Type Icons**: Custom icons for different module types (Android, iOS, Server, etc.).
+- [x] **Rich Tooltips**: Markdown tooltips with detailed module information.
+- [ ] **Theme-Aware Icons**: Custom SVG icons that adapt to Light/Dark themes.
+- [ ] **Module Details Panel**: Webview panel showing detailed module configuration.
+
 ## 🚩 Phase 5: Observability & Diagnostics (The "Performance" Update)
 - [ ] **Build Performance Profiler**: Integration with Jaeger UI (via `amper tool jaeger`) to visualize build traces.
 - [ ] **Dependency Conflict Resolver**: Interactive tree view for `amper show dependencies` with conflict highlighting.
