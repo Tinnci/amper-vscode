@@ -48,7 +48,7 @@ Amper includes a set of specialized tools for environment management and diagnos
 ### `amper tool jdk`
 Manages JDKs automatically provisioned by Amper.
 - **Capabilities**: List installed JDKs, show paths, and manage versions.
-- **Roadmap**: Planned "JDK Manager" view in VS Code.
+- **Extension Integration**: A dedicated "Toolchains" view (JDK Manager) is available in the Activity Bar.
 
 ### `amper tool keystore`
 Generates Keystores for Android application signing.
@@ -65,7 +65,7 @@ Starts a Jaeger instance to visualize build performance traces.
 ### `amper convert-project`
 A powerful utility to migrate existing Maven projects to Amper.
 - **Capabilities**: Parses `pom.xml` and generates equivalent `module.yaml` files.
-- **Roadmap**: Planned "Maven Migration Assistant" with CodeLens support.
+- **Extension Integration**: Commands for project conversion and CodeLens support for `pom.xml` files.
 ## Project Structure
 
 Amper projects are defined by a `module.yaml` file in each module directory. This file contains:

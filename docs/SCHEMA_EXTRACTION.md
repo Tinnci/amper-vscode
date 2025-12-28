@@ -186,8 +186,8 @@ In `package.json`:
 ## Future Enhancements
 
 - [ ] 支持 `project.yaml` 和 `template.yaml` 的 Schema 生成
-- [ ] 从 Amper CLI 获取动态信息（如可用的模板列表）
-- [ ] 生成 TypeScript 类型定义用于插件内部
+- [x] 从 Amper 源码获取动态信息（如可用的模板列表）
+- [ ] 支持解析第三方插件提供的扩展配置
 - [ ] 增加测试用例验证 Schema 正确性
 
 ## References

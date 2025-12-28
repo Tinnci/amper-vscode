@@ -8,226 +8,98 @@
 
 #### 核心模块
 
-- **`main.rs`** (80 行)
-  - CLI 入口点
-  - 使用 `clap` 进行参数解析
-  - 协调解析和生成流程
+- **`main.rs`**
+  - CLI 入口点，使用 `clap` 进行参数解析。
+  - 协调解析和生成流程，支持 `--verbose` 详细调试输出。
 
-- **`types.rs`** (110 行)
-  - 定义核心数据结构
-  - `ClassDef`: Kotlin 类定义
-  - `Property`: 属性（带注解）
-  - `EnumDef`: 枚举定义
-  - 包含注解解析辅助方法
+- **`types.rs`**
+  - 定义核心数据结构：`ClassDef`, `Property`, `EnumDef`。
+  - 处理 Kotlin 解析上下文 (`ParsingContext`)，记录解析状态。
 
-- **`parser.rs`** (260 行)
-  - 遍历 Kotlin 源文件
-  - 使用正则表达式提取：
-    - 类定义（包括 sealed 类）
-    - 属性（包含泛型）
-    - 枚举定义和入口
-    - 注解（`@SchemaDoc`, `@ModifierAware`, 等）
-  - 解析类型信息（`List<T>`, `Map<K,V>`, 可空性）
-  - 解析 sealed 类层级结构
+- **`parser.rs`** (深度增强)
+  - **继承支持**: 完美处理 `Class : Parent()` 语法，并支持属性合并。
+  - **嵌套泛型**: 能够解析 `List<List<T>>` 和 `Map<K, V>` 等复杂类型。
+  - **正则优化**: 处理各种 Kotlin 属性声明格式（如 `val name: Type by nested()` 和 `val name by value<Type>()`）。
+  - **多行解析**: 支持跨行类定义和复杂的注解提取。
 
-- **`schema.rs`** (250 行)
-  - 生成 JSON Schema (Draft 2020-12)
-  - 映射 Kotlin 类型到 JSON Schema 类型
-  - 处理：
-    - Sealed 类 → `anyOf`
-    - 枚举 → `enum` + `x-intellij-enum-metadata`
-    - 属性 → `properties` / `patternProperties`
-    - 文档 → `description` / `title`
-    - 平台/产品类型特异性 → `x-intellij-metadata`
+- **`schema.rs`**
+  - 生成 JSON Schema (Draft 2020-12)。
+  - **属性合并**: 自动将父类（如 `Base`）的属性合并到子类（如 `Module`）中。
+  - 导出 `x-intellij-enum-metadata` 以支持 IDE 中的枚举文档显示。
 
-#### 配置文件
+#### 自动化脚本
 
-- **`Cargo.toml`**
-  - 依赖：serde, regex, walkdir, clap, indexmap
-  - 优化构建配置（LTO, strip, size optimization）
+- **`build.ps1`**: 自动化构建并运行提取。
+- **`package.json` 集成**: 添加了 `extract-schema` 脚本并挂载到 `vscode:prepublish`。
 
-- **`build.ps1`**
-  - 自动化构建脚本
-  - 编译 + 提取 Schema 到 `schemas/module-schema.json`
+### 2. **UI & 体验增强**
 
-- **`README.md`**
-  - 详细文档
-  - 使用示例
-  - 集成指南
-
-### 2. **文档** (`docs/`)
-
-- **`SCHEMA_EXTRACTION.md`** (详细架构文档)
-  - 问题背景
-  - 架构设计
-  - Kotlin → JSON Schema 映射规则
-  - 工作流集成
-  - 250+ 行技术文档
-
-- **`SCHEMA_QUICKSTART.md`** (快速上手指南)
-  - 三种使用方式
-  - 验证指南
-  - 故障排除
-
-### 3. **更新的项目文件**
-
-- **`docs/ROADMAP.md`**
-  - ✅ Phase 3 标记为完成
-  - 添加了 "Smart Schema Generation" 项
+- **动态模板发现**: 实现了从 Amper 源码 (`ProjectTemplatesBundle.properties`) 自动提取项目模板的功能。
+- **智能图标系统**: 根据模块类型 (Android, iOS, JVM 等) 自动显示对应的 VS Code 主题图标。
+- **状态栏增强**: 显示当前项目中的模块总数，点击可查看 Amper 版本。
 
 ## 🎯 核心特性
 
 ### 自动化
-- ✅ 无需手动编写 JSON Schema
-- ✅ 与 Amper 源码保持同步
-- ✅ 一键构建和提取
+- ✅ **自动同步**: Schema 始终与 Amper 源码一致。
+- ✅ **属性继承**: 子类自动获得父类定义的所有配置项。
+- ✅ **文档提取**: 自动提取 `@SchemaDoc` 注解作为提示信息。
 
-### 完整性
-- ✅ 解析 48 个类型
-- ✅ 解析 11 个枚举
-- ✅ 保留文档注释
-- ✅ 处理注解元数据
+### 完整性 (最新统计)
+- ✅ 解析 **49 个类**
+- ✅ 解析 **11 个枚举**
+- ✅ 支持 `Module` 类的所有 9 个核心属性 (包括从 `Base` 继承的)。
 
 ### 智能化
-- ✅ `@Modifier Aware` → `patternProperties` (支持 `test-*` 前缀)
-- ✅ `@PlatformSpecific` → `x-intellij-metadata`
-- ✅ `@ProductTypeSpecific` → 产品类型元数据
-- ✅ `@HiddenFromCompletion` → 从 Schema 中排除
-- ✅ Sealed 类 → `anyOf` 联合类型
-- ✅ 枚举顺序敏感性 → `x-intellij-enum-order-sensitive`
+- ✅ `@ModifierAware` → 支持 `test-*` 动态属性。
+- ✅ 复杂正则处理嵌套尖括号泛型。
+- ✅ 自动处理 Sealed 类联合类型。
 
-### 可维护性
-- ✅ 编译成单一二进制文件
-- ✅ 无运行时依赖（Release 优化）
-- ✅ 清晰的错误信息
-- ✅ Verbose 模式用于调试
-
-## 📊 测试结果
+## 📊 提取结果 (v0.1.0)
 
 ```
-✅ 编译成功（无警告）
-✅ 提取了 48 个类型
+✅ 提取了 49 个类型
 ✅ 提取了 11 个枚举
-✅ 生成的 Schema: schemas/module-schema.json (78 行)
+✅ 生成路径: schemas/module-schema.json (约 680 行)
 ```
 
-### 生成的 Schema 包含
+### 已解析的 Module 属性清单:
+- `product`, `layout`, `pluginInfo`, `plugins`, `settings`, `dependencies`, `repositories`, `tasks`, `apply`
 
-- ✅ `Module` 定义
-- ✅ `ModuleProduct` 定义
-- ✅ `ProductType` 枚举（12 个选项 + 文档）
-- ✅ 正确的引用 (`$ref`)
-- ✅ IntelliJ 元数据扩展
+## 🚀 运行方式
 
-## 🚀 使用示例
+### 使用 NPM (推荐)
+```bash
+npm run extract-schema
+```
 
-### 一键构建和提取
-
-```powershell
+### 直接运行 Rust 工具
+```bash
 cd tools/schema-extractor
-./build.ps1
-```
-
-**输出：**
-```
-Building Amper Schema Extractor...
-Rust version: cargo 1.91.0
-
-Building in release mode...
-   Compiling amper-schema-extractor v0.1.0
-    Finished `release` profile [optimized] target(s) in 1m 09s
-
-Extracting schema...
-Scanning schema files in: ..\..\vendor\amper\sources\frontend-api/src/org/jetbrains/amper/frontend/schema
-  Parsing: androidSettings.kt
-  Parsing: dependencies.kt
-  ...
-Parsed 48 types, 11 enums
-Successfully wrote schema to ..\..\schemas\module-schema.json
-
-Success! Schema written to: ..\..\schemas\module-schema.json
-
-Build complete!
+cargo run --release -- -s ../../vendor/amper/sources -o ../../schemas/module-schema.json -v
 ```
 
 ## 🔄 工作流集成
 
-### 当前工作流
-
-1. **手动触发**（需要时）
-   ```bash
-   cd tools/schema-extractor
-   ./build.ps1
-   ```
-
-### 建议的未来自动化
-
-在 `package.json` 中添加：
-
+在 `package.json` 中已集成：
 ```json
-{
-  "scripts": {
-    "extract-schema": "cd tools/schema-extractor && cargo run --release -- -s ../../vendor/amper/sources -o ../../schemas/module-schema.json",
-    "prebuild": "npm run extract-schema"
-  }
+"scripts": {
+    "extract-schema": "powershell -ExecutionPolicy Bypass -File tools/schema-extractor/build.ps1",
+    "vscode:prepublish": "npm run extract-schema && npm run package"
 }
 ```
 
-## 📈 下一步优化（Optional）
+## 📈 下一阶段目标
 
-### Phase 1: 完善 Schema 内容
-- [ ] 解析更多属性（`dependencies`, `settings`, `repositories`）
-- [ ] 处理 `Base` 类的继承属性
-- [ ] 支持 `aliases`, `apply` 等字段
+### Phase 1: 更多 Schema 支持
+- [ ] 生成 `project.yaml` 的 Schema 验证。
+- [ ] 支持插件配置 (`PluginSettings`) 的深度解析。
 
-### Phase 2: 扩展支持
-- [ ] 生成 `project.yaml` 的 Schema
-- [ ] 生成 `template.yaml` 的 Schema
-- [ ] 从 Amper CLI 动态获取可用模板列表
-
-### Phase 3: TypeScript 集成
-- [ ] 生成 TypeScript 类型定义（用于插件内部）
-- [ ] 自动生成 mock 数据用于测试
-
-### Phase 4: CI/CD 集成
-- [ ] GitHub Actions 自动检测 Amper 更新
-- [ ] 自动 PR 更新 Schema
-- [ ] 添加 Schema 验证测试
-
-## 🎓 关键学习点
-
-### 为什么选择 Rust？
-
-1. **单一二进制** - 无需 Node.js 或 JVM 运行时
-2. **编译速度** - Release 构建约 1 分钟
-3. **正则性能** - `regex` crate 高效
-4. **类型安全** - 强类型系统减少错误
-5. **serde_json** - 优秀的 JSON 序列化
-
-### Kotlin 解析挑战
-
-1. **注解提取** - 使用正则匹配 `@Annotation(...)`
-2. **泛型处理** - 提取 `List<T>`, `Map<K,V>` 中的类型
-3. **Sealed 类** - 递归查找子类
-4. **默认值** - Kotlin 的 `by value(default)` 表达式
-
-### JSON Schema 特性
-
-1. **`$defs`** - 定义可重用类型
-2. **`$ref`** - 引用定义
-3. **`anyOf`** - 联合类型
-4. **`patternProperties`** - 动态属性名
-5. **`x-intellij-*`** - IntelliJ/VS Code 扩展
-
-## 📝 总结
-
-这个工具解决了核心痛点：**无需手动维护 Schema**。每次 Amper 更新时，只需重新运行工具即可获得最新的 JSON Schema，确保 VS Code IntelliSense 始终准确。
-
-**投入：** ~700 行 Rust 代码 + 文档  
-**收益：** 永久自动化的 Schema 同步  
-**维护成本：** 几乎为零
+### Phase 2: 开发辅助
+- [ ] 根据 Schema 自动生成 TypeScript 接口。
+- [ ] 增加单元测试，验证关键类（如 `Module`）的属性完整性。
 
 ---
 
-*Created: December 28, 2025*
-*Tool Version: v0.1.0*
+*Last Updated: December 28, 2025*
+*Tool Version: v0.1.1 (Enhanced Inheritance Support)*
