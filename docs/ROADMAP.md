@@ -43,11 +43,24 @@ This document outlines the development plan for the Amper VS Code extension.
 
 ## 🚩 Phase 6: Extensibility & Mobile (The "Ecosystem" Update)
 - [ ] **Mobile Device Manager**: ADB/Simulator selection UI for `amper run` on Android and iOS.
-- [ ] **XCode Sync Integration**: One-click "Open in XCode" and project synchronization.
-- [ ] **Plugin Development Support**: IntelliSense and scaffolding for Amper extensibility API.
-- [ ] **CI/CD Scaffolding**: Generate GitHub Actions or Space Automation scripts.
+- [ ] **Plugin Discovery**: Integrated gallery to browse and add Amper plugins.
+- [ ] **Module Details Panel**: Interactive Webview panel showing detailed configurations, used platforms, and artifacts.
+- [ ] **Live Device Logs**: Integrated log viewer for connected mobile devices.
+
+## 🚩 Phase 7: Productivity & Intelligence (The "Smart" Update)
+- [ ] **Visual Config Editor**: A GUI-based editor for `module.yaml` with real-time validation and tooltips.
+- [ ] **AI Build Assistant**: "Explain this Error" feature powered by LLMs, integrating build logs and source code.
+- [ ] **Migration Wizard**: Step-by-step UI to transition projects from Gradle/Maven to Amper.
+- [ ] **Refactoring Engine**: Automatic dependency updates when renaming or moving modules.
+
+## 🚩 Phase 8: Ecosystem & Scale (The "Community" Update)
+- [ ] **Amper Hub**: Community-driven template and plugin repository integration.
+- [ ] **CLI Version Manager**: Easy switching and auto-updating of the local Amper CLI wrapper.
+- [ ] **Remote Build Support**: Integration with various CI/CD providers for remote task execution.
 
 ## 🚀 Future Optimizations & Polish
+- [ ] **Drag-and-Drop Operations**: Move files between modules to automatically update `module.yaml`.
+- [ ] **Performance Dashboard**: Real-time stats on build times and success rates across project history.
 - [ ] **Dependency Search & Filter**: Search within the dependency tree to find specific artifacts.
 - [ ] **Version Update Insights**: Highlight dependencies that have newer versions available.
 - [ ] **Conflict Resolution UI**: Interactive actions to exclude or force versions in `module.yaml`.
