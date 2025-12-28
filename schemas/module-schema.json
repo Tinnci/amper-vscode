@@ -36,7 +36,35 @@
         "kotlin": {
           "type": "object",
           "properties": {
-            "serialization": { "type": "string" }
+            "serialization": { "type": "string", "enum": ["none", "json", "kotlinx-serialization"] },
+            "languageVersion": { "type": "string" },
+            "apiVersion": { "type": "string" },
+            "allWarningsAsErrors": { "type": "boolean" }
+          }
+        },
+        "android": {
+          "type": "object",
+          "properties": {
+            "namespace": { "type": "string" },
+            "compileSdk": { "type": "integer" },
+            "minSdk": { "type": "integer" },
+            "targetSdk": { "type": "integer" },
+            "signing": {
+              "type": "object",
+              "properties": {
+                "keyAlias": { "type": "string" },
+                "keyPassword": { "type": "string" },
+                "storeFile": { "type": "string" },
+                "storePassword": { "type": "string" }
+              }
+            }
+          }
+        },
+        "jvm": {
+          "type": "object",
+          "properties": {
+            "mainClass": { "type": "string" },
+            "target": { "type": "string" }
           }
         },
         "compose": {

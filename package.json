@@ -102,6 +102,11 @@
         "category": "Amper"
       },
       {
+        "command": "amper-vscode.cleanBootstrapCache",
+        "title": "Amper: Clean Bootstrap Cache (JRE/Dist)",
+        "category": "Amper"
+      },
+      {
         "command": "amper-vscode.showJdkInfo",
         "title": "Amper: Show JDK Info",
         "category": "Amper"
@@ -185,14 +190,17 @@
           "relative",
           "${workspaceFolder}"
         ],
-        "pattern": {
-          "regexp": "^(.*):(\\d+):(\\d+):\\s+(error|warning|info):\\s+(.*)$",
-          "file": 1,
-          "line": 2,
-          "column": 3,
-          "severity": 4,
-          "message": 5
-        }
+        "pattern": [
+          {
+            "regexp": "^(e|w):\\s+(.*):\\s+\\((\\d+),\\s+(\\d+)\\):\\s+(.*)$",
+            "file": 2,
+            "line": 3,
+            "column": 4,
+            "severity": 1,
+            "message": 5,
+            "loop": true
+          }
+        ]
       }
     ],
     "jsonValidation": [

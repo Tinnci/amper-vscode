@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { NodeProcessExecutor } from '../infrastructure/adapters/NodeProcessExecutor';
 import { FileSystemProjectRepository } from '../infrastructure/repositories/FileSystemProjectRepository';
 import { TaskService } from '../application/services/TaskService';
@@ -150,6 +151,36 @@ export function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('amper-vscode.cleanSharedCaches', async () => {
             await runGlobalAmperCommand('clean-shared-caches', 'Cleaning shared caches...');
+        }),
+
+        vscode.commands.registerCommand('amper-vscode.cleanBootstrapCache', async () => {
+            const confirm = await vscode.window.showWarningMessage(
+                'This will delete the Amper bootstrap cache (JREs and Amper distributions). Amper will re-download them on the next run. Continue?',
+                'Yes', 'No'
+            );
+            if (confirm !== 'Yes') {
+                return;
+            }
+
+            await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: "Cleaning Amper bootstrap cache...",
+                cancellable: false
+            }, async () => {
+                try {
+                    const cachePath = jdkRepo.getAmperCachePath();
+                    if (fs.existsSync(cachePath)) {
+                        // Use fs.rmSync for recursive delete (Node 14.14+)
+                        fs.rmSync(cachePath, { recursive: true, force: true });
+                        vscode.window.showInformationMessage('Amper bootstrap cache cleaned successfully.');
+                        jdkProvider.refresh();
+                    } else {
+                        vscode.window.showInformationMessage('Amper bootstrap cache is already empty.');
+                    }
+                } catch (err: any) {
+                    vscode.window.showErrorMessage(`Failed to clean cache: ${err.message}`);
+                }
+            });
         }),
 
         vscode.commands.registerCommand('amper-vscode.showJdkInfo', async () => {
