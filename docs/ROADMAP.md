@@ -31,9 +31,8 @@ This document outlines the development plan for the Amper VS Code extension.
 ## 🎨 Phase 4.5: UI Polish (The "Quality of Life" Update)
 - [x] **Enhanced Welcome View**: Rich welcome screen with quick actions when no project is open.
 - [x] **Smart Status Bar**: Dynamic status bar showing project info and module count.
-- [x] **Module Type Icons**: Custom icons for different module types (Android, iOS, Server, etc.).
-- [x] **Rich Tooltips**: Markdown tooltips with detailed module information.
-- [ ] **Theme-Aware Icons**: Custom SVG icons that adapt to Light/Dark themes.
+- [x] **Theme-Aware Branding**: Professional custom SVG logo integrated into Activity Bar and Extension icon.
+- [x] **Product-Specific Icons**: Theme-integrated icons for different module types (Android, iOS, Server, etc.) using `ThemeColor`.
 - [ ] **Module Details Panel**: Webview panel showing detailed module configuration.
 
 ## 🚩 Phase 5: Observability & Diagnostics (The "Performance" Update)
@@ -47,6 +46,13 @@ This document outlines the development plan for the Amper VS Code extension.
 - [ ] **XCode Sync Integration**: One-click "Open in XCode" and project synchronization.
 - [ ] **Plugin Development Support**: IntelliSense and scaffolding for Amper extensibility API.
 - [ ] **CI/CD Scaffolding**: Generate GitHub Actions or Space Automation scripts.
+
+## 🚀 Future Optimizations & Polish
+- [ ] **Dependency Search & Filter**: Search within the dependency tree to find specific artifacts.
+- [ ] **Version Update Insights**: Highlight dependencies that have newer versions available.
+- [ ] **Conflict Resolution UI**: Interactive actions to exclude or force versions in `module.yaml`.
+- [ ] **Performance Overlay**: Real-time build status and performance metrics in a status bar overlay.
+- [ ] **Multi-root Optimization**: Better handling of complex multi-root workspaces with cross-project dependencies.
 
 ---
 *Last Updated: December 28, 2025*

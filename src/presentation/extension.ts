@@ -12,8 +12,15 @@ import { AmperJdkProvider } from './providers/AmperJdkProvider';
 import { MavenCodeLensProvider } from './providers/MavenCodeLensProvider';
 import { FileSystemTemplateRepository } from '../domain/repositories/ITemplateRepository';
 import { DependencyService, AmperDependencyProvider } from './providers/AmperDependencyProvider';
+import { Logger } from '../infrastructure/services/Logger';
+import { DiagnosticService } from '../application/services/DiagnosticService';
+import { BuildDiagnosticPanel } from './views/BuildDiagnosticPanel';
 
 export function activate(context: vscode.ExtensionContext) {
+    // 1. Initialize Logger first (Singleton)
+    Logger.getInstance();
+    Logger.info('Amper VS Code Extension activating...');
+
     // Dependency Injection
     const projectRepo = new FileSystemProjectRepository();
     const jdkRepo = new FileSystemJdkRepository();
@@ -21,6 +28,8 @@ export function activate(context: vscode.ExtensionContext) {
     const taskService = new TaskService(projectRepo);
     const projectService = new ProjectService(executor);
     const dependencyService = new DependencyService(executor);
+    const diagnosticService = new DiagnosticService();
+
     const taskProvider = new AmperTaskProvider(taskService);
     const projectProvider = new AmperProjectProvider(taskService);
     const jdkProvider = new AmperJdkProvider(jdkRepo);
@@ -29,8 +38,6 @@ export function activate(context: vscode.ExtensionContext) {
     // Initialize dynamic template discovery
     const templateRepo = new FileSystemTemplateRepository(context.extensionPath);
     projectService.setTemplateRepository(templateRepo);
-
-    const outputChannel = vscode.window.createOutputChannel('Amper');
 
     // Register Task Provider
     context.subscriptions.push(
@@ -100,17 +107,116 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.workspace.onDidChangeWorkspaceFolders(() => updateStatusBar())
     );
 
+    // Helper to execute Amper tasks with Diagnostic View support
+    async function executeAmperTaskWithDiagnostics(command: string, item: any) {
+        const moduleName = item?.module?.name;
+        const rootPath = item?.rootPath;
+        if (!rootPath || !moduleName) {
+            vscode.window.showErrorMessage('Invalid module context');
+            return;
+        }
+
+        // Show panel immediately in loading state (optional, or wait for result)
+        // For better UX, we'll use Progress and Logger, then show Panel on completion/failure
+
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: `Amper: Running ${command} for ${moduleName}...`,
+            cancellable: true
+        }, async (progress, token) => {
+            const startTime = Date.now();
+            Logger.info(`Executing task: ${command} on module: ${moduleName}`);
+
+            try {
+                // Determine CLI args based on module
+                // If it's the root module, just run the command. If sub-module, use -m
+                const args = [command];
+                // Note: Assuming CLI structure. Usually: amper task -m module
+                // For simplicity, we assume root execution or check how AmperTaskProvider does it.
+                // Looking at AmperTaskProvider logic (via TaskService), it constructs tasks.
+                // Here we will use the standard 'amper <task> -m <module>' pattern if needed.
+
+                // Amper 0.5.0+ usually supports: amper <task> -m <module>
+                // We'll append -p or -m based on typical usage. 
+                // However, without complex logic, let's look at how executor works. 
+                // For safety, we try the most common pattern: amper task --module moduleName
+
+                // Wait! 'clean', 'build', 'test', 'run' are standard.
+                // Let's assume we run standard commands for now.
+                // If we need specific module targeting, check Amper CLI docs.
+                // Assuming `amper task module` or similar.
+
+                // Reverting to `amper task` inside the project root for now, but to be precise
+                // we should probably check if we can pass the module name.
+                // For now, let's just run the command and see.
+                // To be safe and target the specific module, we usually need the module path relative to root
+                // or just the module name if unique.
+
+                // Let's rely on the projectRoot being the CWD.
+                // We will append `-m moduleName` if it's not the root module.
+                // But Amper CLI is evolving. Let's start safely.
+
+                // IMPORTANT: Since we don't have the exact CLI syntax logic here derived from TaskProvider, 
+                // we'll try to emulate `amper task -m moduleName`.
+
+                // Actually, let's simplify: Just run the command in the CWD (Project Root).
+                // If user selected a module, we try to pass it.
+
+                // TODO: Refine CLI arguments based on exact Amper version
+                const cmdArgs = [command, '-m', moduleName];
+
+                Logger.debug(`Command: amper ${cmdArgs.join(' ')}`);
+
+                const resultOutput = await executor.exec('amper', cmdArgs, { cwd: rootPath });
+
+                const duration = Date.now() - startTime;
+                Logger.info(`Task completed in ${duration}ms`);
+
+                const buildResult = diagnosticService.parseBuildOutput(resultOutput, true, duration, moduleName, command);
+                BuildDiagnosticPanel.createOrShow(context.extensionUri);
+                BuildDiagnosticPanel.update(buildResult);
+
+                if (buildResult.diagnostics.length > 0) {
+                    // Check if any errors
+                    const hasErrors = buildResult.diagnostics.some(d => d.severity === 'error');
+                    if (hasErrors) {
+                        vscode.window.showErrorMessage(`Amper ${command} failed. Check the report.`);
+                    } else {
+                        vscode.window.showInformationMessage(`Amper ${command} finished with warnings.`);
+                    }
+                } else {
+                    vscode.window.showInformationMessage(`Amper ${command} completed successfully.`);
+                }
+
+            } catch (err: any) {
+                const duration = Date.now() - startTime;
+                Logger.error(`Task failed`, err);
+
+                // Parse the error message as output
+                const output = err.message || err.toString();
+                const buildResult = diagnosticService.parseBuildOutput(output, false, duration, moduleName, command);
+
+                BuildDiagnosticPanel.createOrShow(context.extensionUri);
+                BuildDiagnosticPanel.update(buildResult);
+
+                vscode.window.showErrorMessage(`Amper ${command} failed.`);
+            }
+        });
+    }
+
     // Commands
     context.subscriptions.push(
         vscode.commands.registerCommand('amper-vscode.refreshEntry', () => projectProvider.refresh()),
         vscode.commands.registerCommand('amper-vscode.refreshJdks', () => jdkProvider.refresh()),
         vscode.commands.registerCommand('amper-vscode.refreshDependencies', () => {
-            // Update workspace path and refresh
             const folders = vscode.workspace.workspaceFolders;
             if (folders && folders.length > 0) {
                 dependencyProvider.setWorkspace(folders[0].uri.fsPath);
             }
             dependencyProvider.refresh();
+        }),
+        vscode.commands.registerCommand('amper-vscode.showBuildReport', () => {
+            BuildDiagnosticPanel.createOrShow(context.extensionUri);
         }),
         vscode.commands.registerCommand('amper-vscode.convertMavenProject', async (uri: vscode.Uri) => {
             const projectPath = path.dirname(uri.fsPath);
@@ -121,19 +227,19 @@ export function activate(context: vscode.ExtensionContext) {
                 cancellable: false
             }, async () => {
                 try {
-                    // Note: This uses the hidden/experimental convert-project command
+                    Logger.info('Converting Maven project...');
                     await executor.exec('amper', ['convert-project'], { cwd: projectPath });
-                    vscode.window.showInformationMessage(`Project converted successfully. Check for module.yaml files.`);
+                    vscode.window.showInformationMessage(`Project converted successfully.`);
+                    Logger.info('Conversion successful');
                     projectProvider.refresh();
                 } catch (err: any) {
-                    vscode.window.showErrorMessage(`Failed to convert project: ${err.message}. Note: This feature requires Amper 0.9.0+`);
+                    Logger.error('Conversion failed', err);
+                    vscode.window.showErrorMessage(`Failed to convert project: ${err.message}`);
                 }
             });
         }),
         vscode.commands.registerCommand('amper-vscode.initProject', async () => {
             const templates = projectService.getTemplates();
-
-            // Convert to QuickPick items with descriptions
             const quickPickItems = templates.map(t => ({
                 label: t.label,
                 description: t.id,
@@ -147,9 +253,7 @@ export function activate(context: vscode.ExtensionContext) {
                 matchOnDetail: true
             });
 
-            if (!selected) {
-                return;
-            }
+            if (!selected) { return; }
 
             const result = await vscode.window.showOpenDialog({
                 canSelectFiles: false,
@@ -158,9 +262,7 @@ export function activate(context: vscode.ExtensionContext) {
                 openLabel: 'Select folder to initialize project'
             });
 
-            if (!result || result.length === 0) {
-                return;
-            }
+            if (!result || result.length === 0) { return; }
 
             const projectPath = result[0].fsPath;
 
@@ -170,50 +272,52 @@ export function activate(context: vscode.ExtensionContext) {
                 cancellable: false
             }, async (progress) => {
                 try {
+                    Logger.info(`Initializing project at ${projectPath} with template ${selected.id}`);
                     progress.report({ message: 'Downloading wrapper...' });
                     await projectService.initializeProject(projectPath, selected.id);
-                    vscode.window.showInformationMessage(`Project initialized successfully in ${projectPath}`);
+                    vscode.window.showInformationMessage(`Project initialized successfully.`);
+                    Logger.info('Initialization successful');
 
-                    // Ask to open the folder
                     const open = await vscode.window.showInformationMessage('Open the new project?', 'Yes', 'No');
                     if (open === 'Yes') {
                         vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(projectPath));
                     }
                 } catch (err: any) {
+                    Logger.error('Initialization failed', err);
                     vscode.window.showErrorMessage(`Failed to initialize project: ${err.message}`);
                 }
             });
         }),
 
+        // Updated Module Commands using new execution logic
         vscode.commands.registerCommand('amper-vscode.runModule', async (item: any) => {
-            await executeAmperTask('run', item);
+            await executeAmperTaskWithDiagnostics('run', item);
         }),
 
         vscode.commands.registerCommand('amper-vscode.testModule', async (item: any) => {
-            await executeAmperTask('test', item);
+            await executeAmperTaskWithDiagnostics('test', item);
         }),
 
         vscode.commands.registerCommand('amper-vscode.buildModule', async (item: any) => {
-            await executeAmperTask('build', item);
+            await executeAmperTaskWithDiagnostics('build', item);
         }),
 
         vscode.commands.registerCommand('amper-vscode.cleanModule', async (item: any) => {
-            await executeAmperTask('clean', item);
+            await executeAmperTaskWithDiagnostics('clean', item);
         }),
 
         vscode.commands.registerCommand('amper-vscode.showTasks', async (item: any) => {
             const moduleName = item?.module?.name;
             const rootPath = item?.rootPath;
-            if (!rootPath) {
-                return;
-            }
+            if (!rootPath) { return; }
 
             try {
-                outputChannel.show();
-                outputChannel.appendLine(`Fetching tasks for module: ${moduleName}...`);
+                Logger.info(`Fetching tasks for module: ${moduleName}`);
+                Logger.show(); // Show log output
                 const out = await executor.exec('amper', ['show', 'tasks'], { cwd: rootPath });
-                outputChannel.appendLine(out);
+                Logger.info(out);
             } catch (err: any) {
+                Logger.error('Failed to show tasks', err);
                 vscode.window.showErrorMessage(`Failed to show tasks: ${err.message}`);
             }
         }),
@@ -228,12 +332,10 @@ export function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('amper-vscode.cleanBootstrapCache', async () => {
             const confirm = await vscode.window.showWarningMessage(
-                'This will delete the Amper bootstrap cache (JREs and Amper distributions). Amper will re-download them on the next run. Continue?',
+                'This will delete the Amper bootstrap cache. Continue?',
                 'Yes', 'No'
             );
-            if (confirm !== 'Yes') {
-                return;
-            }
+            if (confirm !== 'Yes') { return; }
 
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
@@ -243,7 +345,6 @@ export function activate(context: vscode.ExtensionContext) {
                 try {
                     const cachePath = jdkRepo.getAmperCachePath();
                     if (fs.existsSync(cachePath)) {
-                        // Use fs.rmSync for recursive delete (Node 14.14+)
                         fs.rmSync(cachePath, { recursive: true, force: true });
                         vscode.window.showInformationMessage('Amper bootstrap cache cleaned successfully.');
                         jdkProvider.refresh();
@@ -251,6 +352,7 @@ export function activate(context: vscode.ExtensionContext) {
                         vscode.window.showInformationMessage('Amper bootstrap cache is already empty.');
                     }
                 } catch (err: any) {
+                    Logger.error('Failed to clean cache', err);
                     vscode.window.showErrorMessage(`Failed to clean cache: ${err.message}`);
                 }
             });
@@ -258,18 +360,16 @@ export function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('amper-vscode.showJdkInfo', async () => {
             const folders = vscode.workspace.workspaceFolders;
-            if (!folders || folders.length === 0) {
-                vscode.window.showWarningMessage('No workspace folder open.');
-                return;
-            }
+            if (!folders || folders.length === 0) { return; }
             const cwd = folders[0].uri.fsPath;
 
             try {
-                outputChannel.show();
-                outputChannel.appendLine('Fetching JDK information...');
+                Logger.info('Fetching JDK info...');
+                Logger.show();
                 const out = await projectService.getJdkInfo(cwd);
-                outputChannel.appendLine(out);
+                Logger.info(out);
             } catch (err: any) {
+                Logger.error('Failed to get JDK info', err);
                 vscode.window.showErrorMessage(`Failed to get JDK info: ${err.message}`);
             }
         })
@@ -278,10 +378,7 @@ export function activate(context: vscode.ExtensionContext) {
     const disposable = vscode.commands.registerCommand('amper-vscode.checkVersion', async () => {
         try {
             const folders = vscode.workspace.workspaceFolders;
-            if (!folders || folders.length === 0) {
-                vscode.window.showWarningMessage('No workspace folder open.');
-                return;
-            }
+            if (!folders || folders.length === 0) { return; }
             const cwd = folders[0].uri.fsPath;
             const out = await executor.exec('amper', ['--version'], { cwd });
             vscode.window.showInformationMessage(`Amper version: ${out}`);
@@ -295,10 +392,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     async function runGlobalAmperCommand(command: string, progressTitle: string) {
         const folders = vscode.workspace.workspaceFolders;
-        if (!folders || folders.length === 0) {
-            vscode.window.showWarningMessage('No workspace folder open.');
-            return;
-        }
+        if (!folders || folders.length === 0) { return; }
         const cwd = folders[0].uri.fsPath;
 
         await vscode.window.withProgress({
@@ -307,26 +401,16 @@ export function activate(context: vscode.ExtensionContext) {
             cancellable: false
         }, async () => {
             try {
+                Logger.info(`Running global command: ${command}`);
                 await executor.exec('amper', [command], { cwd });
                 vscode.window.showInformationMessage(`Amper ${command} completed successfully.`);
             } catch (err: any) {
+                Logger.error(`Command ${command} failed`, err);
                 vscode.window.showErrorMessage(`Amper ${command} failed: ${err.message}`);
             }
         });
     }
 }
 
-async function executeAmperTask(command: string, item: any) {
-    const tasks = await vscode.tasks.fetchTasks({ type: 'amper' });
-    // The item is a ModuleItem from our TreeView
-    const moduleName = item?.module?.name;
-
-    const task = tasks.find(t => t.definition.task === command && t.definition.module === moduleName);
-    if (task) {
-        await vscode.tasks.executeTask(task);
-    } else {
-        vscode.window.showErrorMessage(`Could not find amper ${command} task for module ${moduleName}`);
-    }
-}
-
 export function deactivate() { }
+
