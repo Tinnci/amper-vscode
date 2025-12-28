@@ -5,6 +5,10 @@
   "description": "An unofficial extension to support Amper projects in VS Code.",
   "version": "0.0.1",
   "icon": "resources/logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tinnci/amper-vscode.git"
+  },
   "engines": {
     "vscode": "^1.107.0"
   },
