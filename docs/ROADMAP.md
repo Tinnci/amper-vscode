@@ -38,7 +38,7 @@ This document outlines the development plan for the Amper VS Code extension.
 
 ## 🚩 Phase 5: Observability & Diagnostics (The "Performance" Update)
 - [ ] **Build Performance Profiler**: Integration with Jaeger UI (via `amper tool jaeger`) to visualize build traces.
-- [ ] **Dependency Conflict Resolver**: Interactive tree view for `amper show dependencies` with conflict highlighting.
+- [x] **Dependency Tree View**: Interactive tree view for `amper show dependencies` with conflict highlighting.
 - [ ] **Interactive Diagnostic View**: Structured error reporting with "Explain Error" and "Jump to Source" capabilities.
 - [ ] **Task Graph Visualization**: Interactive view of the task dependency graph.
 
