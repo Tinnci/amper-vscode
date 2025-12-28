@@ -22,8 +22,8 @@ This document outlines the development plan for the Amper VS Code extension.
 ## 🚩 Phase 4: Advanced Tooling & Migration (The "Power User" Update)
 - [x] **Project Initialization Wizard**: A user-friendly UI for `amper init` with template selection.
 - [x] **Global Maintenance**: Commands for `update` and `clean-shared-caches`.
-- [ ] **Maven Migration Assistant**: Integration with `amper-maven-converter` to migrate `pom.xml` to Amper.
-- [ ] **JDK & Toolchain Management**: Visual manager for Amper-provisioned JDKs (via `amper tool jdk`).
+- [x] **Maven Migration Assistant**: CodeLens and command integration for `amper convert-project`.
+- [x] **JDK & Toolchain Management**: Visual manager for Amper-provisioned JDKs in the Activity Bar.
 - [ ] **Android Keystore Wizard**: UI for generating signing keys (via `amper tool keystore`).
 - [ ] **Dynamic Template Discovery**: Fetch available templates directly from Amper CLI.
 

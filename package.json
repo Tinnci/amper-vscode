@@ -26,6 +26,10 @@
         {
           "id": "amperProjectExplorer",
           "name": "Projects"
+        },
+        {
+          "id": "amperJdkExplorer",
+          "name": "Toolchains"
         }
       ]
     },
@@ -45,6 +49,16 @@
         "command": "amper-vscode.refreshEntry",
         "title": "Refresh",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "amper-vscode.refreshJdks",
+        "title": "Refresh Toolchains",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "amper-vscode.convertMavenProject",
+        "title": "Amper: Convert Maven Project",
+        "category": "Amper"
       },
       {
         "command": "amper-vscode.runModule",
@@ -104,6 +118,11 @@
           "command": "amper-vscode.refreshEntry",
           "when": "view == amperProjectExplorer",
           "group": "navigation@2"
+        },
+        {
+          "command": "amper-vscode.refreshJdks",
+          "when": "view == amperJdkExplorer",
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [
@@ -131,6 +150,13 @@
           "command": "amper-vscode.showTasks",
           "when": "view == amperProjectExplorer && viewItem == module",
           "group": "1_modification"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "amper-vscode.convertMavenProject",
+          "when": "resourceFilename == pom.xml",
+          "group": "amper@1"
         }
       ]
     },

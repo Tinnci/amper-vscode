@@ -1,19 +1,25 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { NodeProcessExecutor } from '../infrastructure/adapters/NodeProcessExecutor';
 import { FileSystemProjectRepository } from '../infrastructure/repositories/FileSystemProjectRepository';
 import { TaskService } from '../application/services/TaskService';
 import { ProjectService } from '../application/services/ProjectService';
 import { AmperTaskProvider } from './providers/AmperTaskProvider';
 import { AmperProjectProvider, AmperTreeItem } from './providers/AmperProjectProvider';
+import { FileSystemJdkRepository } from '../infrastructure/repositories/FileSystemJdkRepository';
+import { AmperJdkProvider } from './providers/AmperJdkProvider';
+import { MavenCodeLensProvider } from './providers/MavenCodeLensProvider';
 
 export function activate(context: vscode.ExtensionContext) {
     // Dependency Injection
     const projectRepo = new FileSystemProjectRepository();
+    const jdkRepo = new FileSystemJdkRepository();
     const executor = new NodeProcessExecutor();
     const taskService = new TaskService(projectRepo);
     const projectService = new ProjectService(executor);
     const taskProvider = new AmperTaskProvider(taskService);
     const projectProvider = new AmperProjectProvider(taskService);
+    const jdkProvider = new AmperJdkProvider(jdkRepo);
 
     const outputChannel = vscode.window.createOutputChannel('Amper');
 
@@ -22,8 +28,14 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.tasks.registerTaskProvider(AmperTaskProvider.AmperType, taskProvider)
     );
 
-    // Register Tree View
+    // Register Tree Views
     vscode.window.registerTreeDataProvider('amperProjectExplorer', projectProvider);
+    vscode.window.registerTreeDataProvider('amperJdkExplorer', jdkProvider);
+
+    // Register CodeLens Provider
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider({ language: 'xml', pattern: '**/pom.xml' }, new MavenCodeLensProvider())
+    );
 
     // Status Bar Item
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
@@ -36,7 +48,25 @@ export function activate(context: vscode.ExtensionContext) {
     // Commands
     context.subscriptions.push(
         vscode.commands.registerCommand('amper-vscode.refreshEntry', () => projectProvider.refresh()),
+        vscode.commands.registerCommand('amper-vscode.refreshJdks', () => jdkProvider.refresh()),
+        vscode.commands.registerCommand('amper-vscode.convertMavenProject', async (uri: vscode.Uri) => {
+            const projectPath = path.dirname(uri.fsPath);
 
+            await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: "Converting Maven project to Amper...",
+                cancellable: false
+            }, async () => {
+                try {
+                    // Note: This uses the hidden/experimental convert-project command
+                    await executor.exec('amper', ['convert-project'], { cwd: projectPath });
+                    vscode.window.showInformationMessage(`Project converted successfully. Check for module.yaml files.`);
+                    projectProvider.refresh();
+                } catch (err: any) {
+                    vscode.window.showErrorMessage(`Failed to convert project: ${err.message}. Note: This feature requires Amper 0.9.0+`);
+                }
+            });
+        }),
         vscode.commands.registerCommand('amper-vscode.initProject', async () => {
             const templates = projectService.getTemplates();
             const selected = await vscode.window.showQuickPick(templates, {
