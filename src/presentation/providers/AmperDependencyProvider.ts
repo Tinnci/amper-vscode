@@ -45,57 +45,119 @@ export class DependencyService {
      * |    \--- org.jetbrains:annotations:13.0
      * \--- org.example:my-lib:1.0.0
      */
+    /**
+     * Parse the dependency output from Amper CLI
+     * Handles both ASCII and Unicode tree formats
+     */
     private parseDependencyOutput(output: string): DependencyInfo[] {
-        const lines = output.split('\n').filter(line => line.trim());
-        const root: DependencyInfo[] = [];
-        const stack: { depth: number; node: DependencyInfo }[] = [];
+        const lines = output.split('\n');
+        const rootDependencies: DependencyInfo[] = [];
+        let currentScope: string | undefined;
+        let stack: { depth: number; node: DependencyInfo }[] = [];
+
+        // Regex patterns
+        const scopeRegex = /^Module\s+.*scope\s*=\s*(\w+)/i;
+        const treePrefixRegex = /^([\|\s+\\─├╰]*)/;
+        const dependencyRegex = /([^\s:]+:[^\s:]+:[^\s:\(]+)(?:\s+->\s+([^\s]+))?/;
+        const tagsRegex = /\(([*c])\)|implicit|FAILED/;
 
         for (const line of lines) {
-            // Skip header lines
-            if (!line.includes('---') && !line.includes(':')) {
+            const trimmedLine = line.trim();
+            if (!trimmedLine) { continue; }
+
+            // 1. Detect Scope
+            const scopeMatch = line.match(scopeRegex);
+            if (scopeMatch) {
+                currentScope = scopeMatch[1].toLowerCase();
+                stack = []; // Reset stack for new scope section
                 continue;
             }
 
-            // Calculate depth based on indentation (each level is 5 chars: "|    " or "+--- ")
-            const match = line.match(/^([\|\s+\\-]*)(.*)/);
-            if (!match) {
+            // Skip metadata lines that don't look like tree items
+            if (line.startsWith('Module ') || line.startsWith('Dependencies of module')) {
                 continue;
             }
 
-            const [, prefix, content] = match;
+            // 2. Calculate Depth (handling Unicode and ASCII)
+            // Each level is typically 5 characters: "│    " or "├─── " or "+--- "
+            const prefixMatch = line.match(treePrefixRegex);
+            if (!prefixMatch) { continue; }
+
+            const prefix = prefixMatch[1];
+            // If the line is just a vertical bar, it's a spacer line, skip it
+            if (prefix.trim() === '│' && prefix.length === line.length) { continue; }
+
+            // Only process lines that clearly contain a dependency
+            if (!line.includes(':')) { continue; }
+
             const depth = Math.floor(prefix.length / 5);
 
-            // Parse dependency string (format: group:artifact:version)
-            const depMatch = content.trim().match(/^([^:]+):([^:]+):([^\s(]+)(\s*\(.*\))?/);
-            if (!depMatch) {
-                continue;
+            // 3. Parse Dependency Info
+            const content = line.substring(prefix.length).trim();
+            const depMatch = content.match(dependencyRegex);
+
+            if (!depMatch) { continue; }
+
+            const fullCoordinate = depMatch[1]; // group:artifact:version
+            const conflictVersion = depMatch[2]; // version part of "-> version"
+
+            const parts = fullCoordinate.split(':');
+            if (parts.length < 3) { continue; }
+
+            const group = parts[0];
+            const artifact = parts[1];
+            let version = parts[2];
+
+            // 4. Detect Status/Tags
+            let isConflict = false;
+            let isTransitive = depth > 0;
+            let versionInfo = version;
+
+            if (conflictVersion) {
+                versionInfo = `${version} -> ${conflictVersion}`;
+                version = conflictVersion;
+                // Arrow usually implies resolution change, check if it's a conflict
             }
 
-            const [, group, artifact, version, extra] = depMatch;
-            const isConflict = extra?.includes('conflict') || extra?.includes('FAILED');
+            if (content.includes('FAILED')) {
+                isConflict = true;
+                versionInfo += ' (FAILED)';
+            } else if (content.includes('(c)')) {
+                versionInfo += ' (constraint)';
+            } else if (content.includes('(*)')) {
+                versionInfo += ' (omitted)';
+            }
 
             const node: DependencyInfo = {
                 name: `${group}:${artifact}`,
-                version,
+                version: versionInfo,
+                scope: currentScope,
                 children: [],
                 isConflict
             };
 
-            // Find parent based on depth
-            while (stack.length > 0 && stack[stack.length - 1].depth >= depth) {
-                stack.pop();
-            }
-
-            if (stack.length === 0) {
-                root.push(node);
+            // 5. Build Tree
+            if (depth === 0) {
+                rootDependencies.push(node);
+                stack = [{ depth, node }];
             } else {
-                stack[stack.length - 1].node.children.push(node);
-            }
+                // Find parent
+                while (stack.length > 0 && stack[stack.length - 1].depth >= depth) {
+                    stack.pop();
+                }
 
-            stack.push({ depth, node });
+                if (stack.length > 0) {
+                    stack[stack.length - 1].node.children.push(node);
+                    stack.push({ depth, node });
+                } else {
+                    // Fallback to root if parent lost (shouldn't happen in valid tree)
+                    rootDependencies.push(node);
+                    stack.push({ depth, node });
+                }
+            }
         }
 
-        return root;
+        return rootDependencies;
     }
 }
 
