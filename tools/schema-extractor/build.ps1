@@ -28,16 +28,24 @@ try {
     }
 
     # Extract schema
-    $sourcePath = "..\..\vendor\amper\sources"
-    $outputPath = "..\..\schemas\module-schema.json"
+    $sourcePath = "../../vendor/amper/sources"
+    $outputPath = "../../schemas/module-schema.json"
 
     if (-not (Test-Path $sourcePath)) {
         Write-Host "WARNING: Source path not found: $sourcePath" -ForegroundColor Yellow
-        Write-Host "Skipping schema extraction. Run manually with:" -ForegroundColor Yellow
-        Write-Host "  .\target\release\extract-schema.exe --source $sourcePath --output $outputPath" -ForegroundColor Gray
+        Write-Host "Skipping schema extraction." -ForegroundColor Yellow
     } else {
         Write-Host "`nExtracting schema..." -ForegroundColor Yellow
-        & ".\target\release\extract-schema.exe" --source $sourcePath --output $outputPath --verbose
+        
+        $binaryName = if ($IsWindows) { "extract-schema.exe" } else { "extract-schema" }
+        $binaryPath = Join-Path "target" "release" $binaryName
+
+        if (-not (Test-Path $binaryPath)) {
+            Write-Host "ERROR: Binary not found at $binaryPath" -ForegroundColor Red
+            exit 1
+        }
+
+        & $binaryPath --source $sourcePath --output $outputPath --verbose
 
         if ($LASTEXITCODE -eq 0) {
             Write-Host "`nSuccess! Schema written to: $outputPath" -ForegroundColor Green

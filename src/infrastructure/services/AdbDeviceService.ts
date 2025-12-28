@@ -106,8 +106,11 @@ export class AdbDeviceService implements IDeviceService {
                 const detailsStr = match[3];
 
                 let status: IDevice['status'] = 'offline';
-                if (stateStr === 'device') status = 'connected';
-                else if (stateStr === 'unauthorized') status = 'unauthorized';
+                if (stateStr === 'device') {
+                    status = 'connected';
+                } else if (stateStr === 'unauthorized') {
+                    status = 'unauthorized';
+                }
 
                 // Parse model from details: model:Pixel_XL
                 const modelMatch = detailsStr.match(/model:(\S+)/);

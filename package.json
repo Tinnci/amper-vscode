@@ -1,4 +1,4 @@
-{  
+{
   "name": "amper-vscode",
   "displayName": "Amper for VS Code",
   "publisher": "Tinnci",
@@ -304,7 +304,7 @@
     ]
   },
   "scripts": {
-    "extract-schema": "powershell -ExecutionPolicy Bypass -File tools/schema-extractor/build.ps1",
+    "extract-schema": "pwsh -ExecutionPolicy Bypass -File tools/schema-extractor/build.ps1",
     "vscode:prepublish": "npm run extract-schema && npm run package",
     "compile": "webpack",
     "watch": "webpack --watch",
@@ -314,7 +314,8 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src",
     "format": "eslint src --fix",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -323,6 +324,8 @@
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.39.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "ts-loader": "^9.5.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.1",
@@ -331,5 +334,8 @@
   },
   "dependencies": {
     "yaml": "^2.8.2"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,js}": "eslint --fix"
   }
 }
