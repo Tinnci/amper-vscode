@@ -189,7 +189,7 @@ impl<'a> SchemaBuilder<'a> {
         schema
     }
 
-    fn build_type_schema(&mut self, type_name: &str, prop: &Property) -> Value {
+    fn build_type_schema(&mut self, type_name: &str, _prop: &Property) -> Value {
         // Check if it's an enum
         if let Some(enum_def) = self.context.enums.get(type_name) {
             return self.build_enum_schema(enum_def);

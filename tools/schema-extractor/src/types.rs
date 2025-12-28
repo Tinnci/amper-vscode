@@ -46,6 +46,7 @@ impl Property {
     }
 
     /// Check if this property is a shorthand
+    #[allow(dead_code)]
     pub fn is_shorthand(&self) -> bool {
         self.has_annotation("Shorthand")
     }
@@ -92,7 +93,9 @@ impl Property {
 /// A Kotlin enum definition
 #[derive(Debug, Clone)]
 pub struct EnumDef {
+    #[allow(dead_code)]
     pub name: String,
+    #[allow(dead_code)]
     pub doc: Option<String>,
     pub entries: Vec<EnumEntry>,
     pub is_order_sensitive: bool,
@@ -101,6 +104,7 @@ pub struct EnumDef {
 /// An enum entry
 #[derive(Debug, Clone)]
 pub struct EnumEntry {
+    #[allow(dead_code)]
     pub name: String,
     pub schema_value: String,
     pub doc: Option<String>,
