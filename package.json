@@ -210,6 +210,13 @@
           "group": "inline"
         }
       ],
+      "explorer/context": [
+        {
+          "command": "amper-vscode.openModuleEditor",
+          "when": "resourceFilename == module.yaml",
+          "group": "inline"
+        }
+      ],
       "editor/title": [
         {
           "command": "amper-vscode.openModuleEditor",
