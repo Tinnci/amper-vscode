@@ -42,7 +42,7 @@ This document outlines the development plan for the Amper VS Code extension.
 - [x] **Task Graph Visualization**: Interactive view of the task dependency graph using Mermaid.js.
 
 ## 🚩 Phase 6: Extensibility & Mobile (The "Ecosystem" Update)
-- [ ] **Mobile Device Manager**: ADB/Simulator selection UI for `amper run` on Android and iOS.
+- [x] **Mobile Device Manager**: Native ADB integration with Activity Bar tree view and Status Bar selector.
 - [ ] **Plugin Discovery**: Integrated gallery to browse and add Amper plugins.
 - [x] **Module Details Panel**: Interactive Webview panel (Visual Config Editor) showing detailed configurations, used platforms, and artifacts.
 - [ ] **Live Device Logs**: Integrated log viewer for connected mobile devices.

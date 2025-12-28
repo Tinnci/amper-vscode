@@ -37,7 +37,14 @@
         {
           "id": "amperJdkExplorer",
           "name": "Toolchains",
-          "icon": "tools"
+          "icon": "resources/logo.png",
+          "contextualTitle": "Amper Toolchains"
+        },
+        {
+          "id": "amperDeviceExplorer",
+          "name": "Devices",
+          "icon": "$(device-mobile)",
+          "contextualTitle": "Connected Devices"
         }
       ]
     },
@@ -148,6 +155,12 @@
         "title": "Open Build Trace (Jaeger)",
         "category": "Amper",
         "icon": "$(pulse)"
+      },
+      {
+        "command": "amper-vscode.selectDevice",
+        "title": "Select Device",
+        "category": "Amper",
+        "icon": "$(device-mobile)"
       }
     ],
     "menus": {

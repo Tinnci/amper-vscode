@@ -20,6 +20,9 @@ import { TaskGraphPanel } from './views/TaskGraphPanel';
 import { ModuleConfigEditorProvider } from './editors/ModuleConfigEditorProvider';
 import { ModuleCodeLensProvider } from './providers/ModuleCodeLensProvider';
 import { AmperProgressParser } from '../domain/utils/AmperProgressParser';
+import { AdbDeviceService } from '../infrastructure/services/AdbDeviceService';
+import { AmperDeviceProvider } from './providers/AmperDeviceProvider';
+import { IDevice } from '../domain/interfaces/IDeviceService';
 
 export function activate(context: vscode.ExtensionContext) {
     // 1. Initialize Logger first (Singleton)
@@ -57,11 +60,13 @@ export function activate(context: vscode.ExtensionContext) {
     const dependencyService = new DependencyService(executor);
     const diagnosticService = new DiagnosticService();
     const taskGraphService = new TaskGraphService(executor);
+    const deviceService = new AdbDeviceService(executor);
 
     const taskProvider = new AmperTaskProvider(taskService);
     const projectProvider = new AmperProjectProvider(taskService);
     const jdkProvider = new AmperJdkProvider(jdkRepo);
     const dependencyProvider = new AmperDependencyProvider(dependencyService);
+    const deviceProvider = new AmperDeviceProvider(deviceService);
 
     // Initialize dynamic template discovery
     const templateRepo = new FileSystemTemplateRepository(context.extensionPath);
@@ -76,6 +81,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider('amperProjectExplorer', projectProvider);
     vscode.window.registerTreeDataProvider('amperDependencyExplorer', dependencyProvider);
     vscode.window.registerTreeDataProvider('amperJdkExplorer', jdkProvider);
+    vscode.window.registerTreeDataProvider('amperDeviceExplorer', deviceProvider);
 
     // Register CodeLens Provider
     context.subscriptions.push(
@@ -95,6 +101,25 @@ export function activate(context: vscode.ExtensionContext) {
     projectStatusBar.command = 'amper-vscode.checkVersion';
     projectStatusBar.tooltip = 'Click to check Amper version';
     context.subscriptions.push(projectStatusBar);
+
+    // 3. Device Selector Status Bar
+    const deviceStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 90);
+    deviceStatusBar.command = 'amper-vscode.selectDevice';
+    deviceStatusBar.tooltip = 'Select target device for run/debug';
+    deviceStatusBar.text = '$(device-mobile) No Device';
+    context.subscriptions.push(deviceStatusBar);
+
+    // Sync Status Bar with Device Selection
+    deviceService.onDeviceChanged((device) => {
+        if (device) {
+            deviceStatusBar.text = `$(device-mobile) ${device.name}`;
+            deviceStatusBar.show();
+        } else {
+            deviceStatusBar.text = `$(device-mobile) No Device`;
+            // Keep showing it so user knows they CAN select a device
+            deviceStatusBar.show();
+        }
+    });
 
     // Update status bar based on project state
     async function updateStatusBar() {
@@ -198,6 +223,21 @@ export function activate(context: vscode.ExtensionContext) {
                 // TODO: Refine CLI arguments based on exact Amper version
                 const cmdArgs = [command, '-m', moduleName];
 
+                // Inject Device ID for 'run' command if a device is selected
+                if (command === 'run') {
+                    const selectedDevice = deviceService.getSelectedDevice();
+                    if (selectedDevice && selectedDevice.status === 'connected') {
+                        // TODO: We might need to handle platform logic (e.g., -p android)
+                        // For now, Amper usually auto-detects platform compatibility or we assume Android if ADB device is picked.
+                        if (selectedDevice.platform === 'android') {
+                            cmdArgs.push('-p', 'android');
+                        }
+                        cmdArgs.push('-d', selectedDevice.id);
+                        Logger.info(`Targeting device: ${selectedDevice.name} (${selectedDevice.id})`);
+                        progress.report({ message: `Targeting ${selectedDevice.name}...` });
+                    }
+                }
+
                 Logger.debug(`Command: amper ${cmdArgs.join(' ')}`);
 
                 const resultOutput = await executor.exec('amper', cmdArgs, {
@@ -283,6 +323,35 @@ export function activate(context: vscode.ExtensionContext) {
         }),
         vscode.commands.registerCommand('amper-vscode.showBuildReport', () => {
             BuildDiagnosticPanel.createOrShow(context.extensionUri);
+        }),
+        vscode.commands.registerCommand('amper-vscode.selectDevice', async (device?: IDevice) => {
+            // If invoked from TreeView, device is passed directly
+            if (device) {
+                deviceService.selectDevice(device);
+                return;
+            }
+
+            // If invoked from Command Palette or Status Bar, show QuickPick
+            const devices = await deviceService.getConnectedDevices();
+            if (devices.length === 0) {
+                vscode.window.showInformationMessage('No devices connected. Connect a device via USB or start an emulator.');
+                return;
+            }
+
+            const items = devices.map(d => ({
+                label: `$(device-mobile) ${d.name}`,
+                description: d.status,
+                detail: `${d.id} • ${d.platform}`,
+                device: d
+            }));
+
+            const selected = await vscode.window.showQuickPick(items, {
+                placeHolder: 'Select a device for Amper Run'
+            });
+
+            if (selected) {
+                deviceService.selectDevice(selected.device);
+            }
         }),
         vscode.commands.registerCommand('amper-vscode.convertMavenProject', async (uri: vscode.Uri) => {
             const projectPath = path.dirname(uri.fsPath);
