@@ -265,6 +265,7 @@ class DependencyItem extends DependencyTreeItem {
                 `📦 **Direct Dependency**\n\n` +
                 `**${dependency.name}**\n\n` +
                 `Version: \`${dependency.version}\`\n\n` +
+                `${dependency.scope ? `Scope: \`${dependency.scope}\`\n\n` : ''}` +
                 `${hasChildren ? `🔗 ${dependency.children.length} transitive dependencies` : ''}`
             );
         }
