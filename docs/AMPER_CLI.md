@@ -74,4 +74,28 @@ Amper projects are defined by a `module.yaml` file in each module directory. Thi
 - **Settings**: Compiler options and platform-specific configurations.
 
 ---
+
+## How Amper Works (The Bootstrapper Architecture)
+
+A common misconception is that Amper is a standalone binary (like `amper.exe`). In reality, Amper is a **JVM-based application** (written in Kotlin) that relies on a **Bootstrapper script** (`amper.bat` on Windows, `./amper` on Unix).
+
+### The Role of the Wrapper Script
+
+When you run `.\amper.bat show tasks`, the script performs the following orchestration:
+
+1.  **Provisioning**: It checks if the required version of Amper and a compatible JRE (Java Runtime Environment) are present in the local cache (usually `%LOCALAPPDATA%\JetBrains\Amper`). If not, it downloads them automatically.
+2.  **Environment Setup**: It sets up `AMPER_JAVA_HOME` and identifies the correct `java.exe` to use.
+3.  **Classpath Construction**: It gathers all necessary JAR files from the downloaded Amper distribution.
+4.  **Execution**: It launches the Java process with the following structure:
+    ```batch
+    "java.exe" -cp "amper-libs/*" org.jetbrains.amper.cli.MainKt <args>
+    ```
+
+### Implications for Extension Development
+
+-   **No Standalone Binary**: Never look for an `amper.exe`. It doesn't exist.
+-   **Always Use the Wrapper**: The extension must always invoke the `./amper` or `amper.bat` script found in the project root.
+-   **Trust the Script**: The wrapper handles complex versioning, hash verification, and environment configuration. By calling the script, the extension ensures it's using the exact environment intended for that specific project.
+
+---
 *For more detailed information, visit the [official Amper documentation](https://github.com/JetBrains/amper).*
