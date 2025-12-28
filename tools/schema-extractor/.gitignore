@@ -1,0 +1,10 @@
+# Schema Extractor Build Artifacts
+/target/
+Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

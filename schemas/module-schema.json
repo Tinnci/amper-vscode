@@ -1,86 +1,78 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Amper Module Configuration",
-  "type": "object",
-  "properties": {
-    "product": {
-      "oneOf": [
-        { "type": "string" },
-        {
-          "type": "object",
-          "properties": {
-            "type": { "type": "string" },
-            "platforms": {
-              "type": "array",
-              "items": { "type": "string" }
-            }
-          }
-        }
-      ]
-    },
-    "dependencies": {
-      "type": "array",
-      "items": {
-        "oneOf": [
-          { "type": "string" },
-          {
-            "type": "object",
-            "additionalProperties": true
-          }
-        ]
-      }
-    },
-    "settings": {
-      "type": "object",
+  "$defs": {
+    "Module": {
+      "additionalProperties": false,
       "properties": {
-        "kotlin": {
-          "type": "object",
-          "properties": {
-            "serialization": { "type": "string", "enum": ["none", "json", "kotlinx-serialization"] },
-            "languageVersion": { "type": "string" },
-            "apiVersion": { "type": "string" },
-            "allWarningsAsErrors": { "type": "boolean" }
-          }
+        "layout": {
+          "type": "string"
         },
-        "android": {
-          "type": "object",
-          "properties": {
-            "namespace": { "type": "string" },
-            "compileSdk": { "type": "integer" },
-            "minSdk": { "type": "integer" },
-            "targetSdk": { "type": "integer" },
-            "signing": {
-              "type": "object",
-              "properties": {
-                "keyAlias": { "type": "string" },
-                "keyPassword": { "type": "string" },
-                "storeFile": { "type": "string" },
-                "storePassword": { "type": "string" }
-              }
-            }
-          }
+        "pluginInfo": {
+          "description": "Type: PluginDeclarationSchema",
+          "type": "string"
         },
-        "jvm": {
-          "type": "object",
-          "properties": {
-            "mainClass": { "type": "string" },
-            "target": { "type": "string" }
-          }
-        },
-        "compose": {
-          "type": "object",
-          "properties": {
-            "enabled": { "type": "boolean" }
-          }
+        "product": {
+          "$ref": "#/$defs/ModuleProduct"
         }
-      }
+      },
+      "required": [
+        "product",
+        "layout",
+        "pluginInfo"
+      ],
+      "type": "object"
+    },
+    "ModuleProduct": {
+      "additionalProperties": false,
+      "properties": {
+        "platforms": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "lib",
+            "jvm/app",
+            "jvm/lib",
+            "jvm/amper-plugin",
+            "android/app",
+            "ios/app",
+            "macos/app",
+            "linux/app",
+            "windows/app",
+            "wasm-js/app",
+            "wasm-wasi/app",
+            "js/app"
+          ],
+          "x-intellij-enum-metadata": {
+            "android/app": "An Android VM application",
+            "ios/app": "An iOS application",
+            "js/app": "A JavaScript application",
+            "jvm/amper-plugin": "An Amper plugin",
+            "jvm/app": "A JVM console or desktop application",
+            "jvm/lib": "A reusable JVM library which could be used as dependency by other modules in the codebase only limited by JVM platform",
+            "lib": "A reusable multiplatform library which could be used as dependency by other modules in the codebase",
+            "linux/app": "A native linux application",
+            "macos/app": "A native macOS application",
+            "wasm-js/app": "A wasm JS application",
+            "wasm-wasi/app": "A wasm JS application",
+            "windows/app": "A native Windows application"
+          },
+          "x-intellij-enum-order-sensitive": true
+        }
+      },
+      "required": [
+        "type",
+        "platforms"
+      ],
+      "type": "object"
     }
   },
-  "patternProperties": {
-    "^dependencies@.*$": {
-      "type": "array",
-      "items": { "oneOf": [{ "type": "string" }, { "type": "object" }] }
-    },
-    "^settings@.*$": { "type": "object" }
-  }
+  "$id": "Module.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allOf": [
+    {
+      "$ref": "#/$defs/Module"
+    }
+  ],
+  "title": "Module schema",
+  "type": "object"
 }

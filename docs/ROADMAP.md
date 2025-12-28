@@ -12,12 +12,13 @@ This document outlines the development plan for the Amper VS Code extension.
 - [x] **YAML Parsing**: Extraction of module types and metadata.
 - [x] **Task Provider**: Integration with VS Code Task system (Build, Run, Test).
 
-## 🚩 Phase 3: IDE Experience (In Progress)
+## 🚩 Phase 3: IDE Experience (Completed)
 - [x] **Project Explorer**: Custom TreeView in the Activity Bar to visualize project structure.
 - [x] **Module Commands**: Inline actions in the TreeView (Run, Test, Build).
 - [x] **Output Highlighting**: Problem matchers for Kotlin compiler errors.
 - [x] **Schema Support**: JSON Schema for `module.yaml` to provide IntelliSense.
 - [x] **Advanced Task Support**: Support for `amper show tasks` and module-specific task execution.
+- [x] **Smart Schema Generation**: Rust-based tool (`tools/schema-extractor`) that automatically extracts JSON Schema from Amper's Kotlin source code. No more manual schema maintenance!
 
 ## 🚩 Phase 4: Advanced Tooling & Migration (The "Power User" Update)
 - [x] **Project Initialization Wizard**: A user-friendly UI for `amper init` with template selection.
